@@ -1,12 +1,12 @@
 {
   "distro": "ubuntu",
-  "release": "resolute",
+  "release": "stonking",
   "builds": [
     {
-      "build": "20260927",
+      "build": "20261019",
       "point_release": null,
       "published_at": null,
-      "first_seen": "2026-10-06T20:41:54.153023691Z",
+      "first_seen": "2026-10-24T08:28:12.184310711Z",
       "osinfo": null,
       "artifacts": [
         {
@@ -20,10 +20,10 @@
             "nocloud"
           ],
           "ssh_key_injection": true,
-          "size": 865115136,
+          "size": 876937216,
           "locations": [
             {
-              "url": "https://cloud-images.ubuntu.com/server/releases/resolute/release-20260927/ubuntu-26.04-server-cloudimg-amd64.img",
+              "url": "https://cloud-images.ubuntu.com/server/releases/stonking/release-20261019/ubuntu-26.10-server-cloudimg-amd64.img",
               "kind": "primary",
               "redirects_off_host": false
             }
@@ -32,25 +32,70 @@
             "digests": [
               {
                 "algorithm": "sha256",
-                "value": "8800651811af9a85465ad1d552add729947bb16488dddb4a9b5305a3d97332b2",
+                "value": "a021682aff9c0d455315230f229138e4d1413c5bce96ec336e453a69086d9c2f",
                 "source": {
-                  "url": "https://cloud-images.ubuntu.com/server/releases/resolute/release-20260927/SHA256SUMS",
+                  "url": "https://cloud-images.ubuntu.com/server/releases/stonking/release-20261019/SHA256SUMS",
                   "format": "gnu",
-                  "filename": "ubuntu-26.04-server-cloudimg-amd64.img"
+                  "filename": "ubuntu-26.10-server-cloudimg-amd64.img"
                 }
               }
             ],
             "signatures": [
               {
-                "url": "https://cloud-images.ubuntu.com/server/releases/resolute/release-20260927/SHA256SUMS.gpg",
+                "url": "https://cloud-images.ubuntu.com/server/releases/stonking/release-20261019/SHA256SUMS.gpg",
                 "kind": "pgp_detached",
-                "signs": "https://cloud-images.ubuntu.com/server/releases/resolute/release-20260927/SHA256SUMS",
+                "signs": "https://cloud-images.ubuntu.com/server/releases/stonking/release-20261019/SHA256SUMS",
                 "key_url": null
               }
             ],
             "http": {
-              "last_modified": "Tue, 29 Sep 2026 00:41:16 GMT",
-              "etag": "\"33909c00-65c9470b9e7b6\""
+              "last_modified": "Mon, 19 Oct 2026 23:39:12 GMT",
+              "etag": "\"34450000-65e3a0573ea92\""
+            }
+          }
+        },
+        {
+          "variant": "server",
+          "default_variant": true,
+          "arch": "aarch64",
+          "format": "qcow2",
+          "compression": "none",
+          "firmware": [],
+          "datasources": [
+            "nocloud"
+          ],
+          "ssh_key_injection": true,
+          "size": 976805888,
+          "locations": [
+            {
+              "url": "https://cloud-images.ubuntu.com/server/releases/stonking/release-20261019/ubuntu-26.10-server-cloudimg-arm64.img",
+              "kind": "primary",
+              "redirects_off_host": false
+            }
+          ],
+          "integrity": {
+            "digests": [
+              {
+                "algorithm": "sha256",
+                "value": "ef1ac0e0bfd3ab265507c9efe78f130960b808b940b4f03e68382f1fd3f34a1e",
+                "source": {
+                  "url": "https://cloud-images.ubuntu.com/server/releases/stonking/release-20261019/SHA256SUMS",
+                  "format": "gnu",
+                  "filename": "ubuntu-26.10-server-cloudimg-arm64.img"
+                }
+              }
+            ],
+            "signatures": [
+              {
+                "url": "https://cloud-images.ubuntu.com/server/releases/stonking/release-20261019/SHA256SUMS.gpg",
+                "kind": "pgp_detached",
+                "signs": "https://cloud-images.ubuntu.com/server/releases/stonking/release-20261019/SHA256SUMS",
+                "key_url": null
+              }
+            ],
+            "http": {
+              "last_modified": "Mon, 19 Oct 2026 23:39:48 GMT",
+              "etag": "\"3a38e000-65e3a07919bf5\""
             }
           }
         }

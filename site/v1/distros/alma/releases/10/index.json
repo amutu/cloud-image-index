@@ -53,6 +53,51 @@
               "etag": "\"6acc6808-1dad0000\""
             }
           }
+        },
+        {
+          "variant": "genericcloud",
+          "default_variant": true,
+          "arch": "aarch64",
+          "format": "qcow2",
+          "compression": "none",
+          "firmware": [],
+          "datasources": [
+            "nocloud"
+          ],
+          "ssh_key_injection": true,
+          "size": 478937088,
+          "locations": [
+            {
+              "url": "https://repo.almalinux.org/almalinux/10/cloud/aarch64/images/AlmaLinux-10-GenericCloud-10.2-20261012.0.aarch64.qcow2",
+              "kind": "primary",
+              "redirects_off_host": false
+            }
+          ],
+          "integrity": {
+            "digests": [
+              {
+                "algorithm": "sha256",
+                "value": "ca65d1c32430acd84e9126c2e48f3b4110cd649a592712bfb570a6650e7e19e7",
+                "source": {
+                  "url": "https://repo.almalinux.org/almalinux/10/cloud/aarch64/images/CHECKSUM",
+                  "format": "gnu",
+                  "filename": "AlmaLinux-10-GenericCloud-10.2-20261012.0.aarch64.qcow2"
+                }
+              }
+            ],
+            "signatures": [
+              {
+                "url": "https://repo.almalinux.org/almalinux/10/cloud/aarch64/images/CHECKSUM.asc",
+                "kind": "pgp_detached",
+                "signs": "https://repo.almalinux.org/almalinux/10/cloud/aarch64/images/CHECKSUM",
+                "key_url": null
+              }
+            ],
+            "http": {
+              "last_modified": "Mon, 12 Oct 2026 05:02:55 GMT",
+              "etag": "\"6acc69ff-1c8c0000\""
+            }
+          }
         }
       ]
     }

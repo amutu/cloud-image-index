@@ -53,6 +53,51 @@
               "etag": "\"69e2d144-bf60000\""
             }
           }
+        },
+        {
+          "variant": "cloudinit",
+          "default_variant": true,
+          "arch": "aarch64",
+          "format": "qcow2",
+          "compression": "none",
+          "firmware": [],
+          "datasources": [
+            "nocloud"
+          ],
+          "ssh_key_injection": true,
+          "size": 235077632,
+          "locations": [
+            {
+              "url": "https://dl-cdn.alpinelinux.org/alpine/v3.23/releases/cloud/nocloud_alpine-3.23.4-aarch64-uefi-cloudinit-r0.qcow2",
+              "kind": "primary",
+              "redirects_off_host": false
+            }
+          ],
+          "integrity": {
+            "digests": [
+              {
+                "algorithm": "sha512",
+                "value": "737b0eb365944ffcf6da477c059c105bbde222942fd5a8380c07db088365b18dbc60a0f2824ea9a3904d57e194e0d05a7074302c3ebc104d0aecb6ddc6ffd91c",
+                "source": {
+                  "url": "https://dl-cdn.alpinelinux.org/alpine/v3.23/releases/cloud/nocloud_alpine-3.23.4-aarch64-uefi-cloudinit-r0.qcow2.sha512",
+                  "format": "bare",
+                  "filename": null
+                }
+              }
+            ],
+            "signatures": [
+              {
+                "url": "https://dl-cdn.alpinelinux.org/alpine/v3.23/releases/cloud/nocloud_alpine-3.23.4-aarch64-uefi-cloudinit-r0.qcow2.asc",
+                "kind": "pgp_detached",
+                "signs": "https://dl-cdn.alpinelinux.org/alpine/v3.23/releases/cloud/nocloud_alpine-3.23.4-aarch64-uefi-cloudinit-r0.qcow2",
+                "key_url": null
+              }
+            ],
+            "http": {
+              "last_modified": "Fri, 17 Apr 2026 23:34:25 GMT",
+              "etag": "\"69e2c381-e030000\""
+            }
+          }
         }
       ]
     }

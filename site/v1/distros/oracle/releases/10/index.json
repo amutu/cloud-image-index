@@ -48,6 +48,53 @@
           }
         }
       ]
+    },
+    {
+      "build": "10.1-b178",
+      "point_release": "10.1",
+      "published_at": null,
+      "first_seen": "2026-10-24T08:28:12.184310711Z",
+      "osinfo": null,
+      "artifacts": [
+        {
+          "variant": "kvm-cloud",
+          "default_variant": true,
+          "arch": "aarch64",
+          "format": "qcow2",
+          "compression": "none",
+          "firmware": [],
+          "datasources": [
+            "nocloud"
+          ],
+          "ssh_key_injection": true,
+          "size": 749273088,
+          "locations": [
+            {
+              "url": "https://yum.oracle.com/templates/OracleLinux/OL10/u1/aarch64/OL10U1_aarch64-kvm-cloud-b178.qcow2",
+              "kind": "primary",
+              "redirects_off_host": false
+            }
+          ],
+          "integrity": {
+            "digests": [
+              {
+                "algorithm": "sha256",
+                "value": "e203063e0e8b2752a896787ecc44fc506527055ec819b1422a297d60ad968b20",
+                "source": {
+                  "url": "https://yum.oracle.com/oracle-linux-templates.html",
+                  "format": "vendor_document",
+                  "filename": null
+                }
+              }
+            ],
+            "signatures": [],
+            "http": {
+              "last_modified": "Fri, 29 May 2026 09:17:19 GMT",
+              "etag": "\"da5566689fe781c6b6e7d6152f8b862b:1780573532.780261\""
+            }
+          }
+        }
+      ]
     }
   ]
 }

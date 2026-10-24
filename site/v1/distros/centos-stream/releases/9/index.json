@@ -3,10 +3,10 @@
   "release": "9",
   "builds": [
     {
-      "build": "20261013.0",
+      "build": "20261023.1",
       "point_release": null,
       "published_at": null,
-      "first_seen": "2026-10-14T05:30:03.398966119Z",
+      "first_seen": "2026-10-24T08:28:12.184310711Z",
       "osinfo": null,
       "artifacts": [
         {
@@ -20,10 +20,10 @@
             "nocloud"
           ],
           "ssh_key_injection": true,
-          "size": 1276641280,
+          "size": 1276837888,
           "locations": [
             {
-              "url": "https://cloud.centos.org/centos/9-stream/x86_64/images/CentOS-Stream-GenericCloud-9-20261013.0.x86_64.qcow2",
+              "url": "https://cloud.centos.org/centos/9-stream/x86_64/images/CentOS-Stream-GenericCloud-9-20261023.1.x86_64.qcow2",
               "kind": "primary",
               "redirects_off_host": false
             }
@@ -32,18 +32,56 @@
             "digests": [
               {
                 "algorithm": "sha256",
-                "value": "6178901e812a08e1c36e5adac2992be65a409dfb61812a6b630b2488fc0644b3",
+                "value": "c705412b3b80cace91f1a205c685fc1da168637fed4f3fce022c2147d5276d18",
                 "source": {
-                  "url": "https://cloud.centos.org/centos/9-stream/x86_64/images/CentOS-Stream-GenericCloud-9-20261013.0.x86_64.qcow2.SHA256SUM",
+                  "url": "https://cloud.centos.org/centos/9-stream/x86_64/images/CentOS-Stream-GenericCloud-9-20261023.1.x86_64.qcow2.SHA256SUM",
                   "format": "bsd",
-                  "filename": "CentOS-Stream-GenericCloud-9-20261013.0.x86_64.qcow2"
+                  "filename": "CentOS-Stream-GenericCloud-9-20261023.1.x86_64.qcow2"
                 }
               }
             ],
             "signatures": [],
             "http": {
-              "last_modified": "Wed, 14 Oct 2026 02:43:23 GMT",
-              "etag": "\"4c180000-65dc3e518fcc2\""
+              "last_modified": "Sat, 24 Oct 2026 06:24:43 GMT",
+              "etag": "\"4c1b0000-65e902708b222\""
+            }
+          }
+        },
+        {
+          "variant": "genericcloud",
+          "default_variant": true,
+          "arch": "aarch64",
+          "format": "qcow2",
+          "compression": "none",
+          "firmware": [],
+          "datasources": [
+            "nocloud"
+          ],
+          "ssh_key_injection": true,
+          "size": 1192624128,
+          "locations": [
+            {
+              "url": "https://cloud.centos.org/centos/9-stream/aarch64/images/CentOS-Stream-GenericCloud-9-20261023.1.aarch64.qcow2",
+              "kind": "primary",
+              "redirects_off_host": false
+            }
+          ],
+          "integrity": {
+            "digests": [
+              {
+                "algorithm": "sha256",
+                "value": "72d7efb6e1692f7faa28e41e74e404192c38e4a97b65b4cfcfe4d71d813739b5",
+                "source": {
+                  "url": "https://cloud.centos.org/centos/9-stream/aarch64/images/CentOS-Stream-GenericCloud-9-20261023.1.aarch64.qcow2.SHA256SUM",
+                  "format": "bsd",
+                  "filename": "CentOS-Stream-GenericCloud-9-20261023.1.aarch64.qcow2"
+                }
+              }
+            ],
+            "signatures": [],
+            "http": {
+              "last_modified": "Sat, 24 Oct 2026 06:23:48 GMT",
+              "etag": "\"47160000-65e9023bb4c50\""
             }
           }
         }

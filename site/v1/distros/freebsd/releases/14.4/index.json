@@ -46,6 +46,44 @@
               "etag": "\"69aacadc-2782ac90\""
             }
           }
+        },
+        {
+          "variant": "basic-cloudinit-zfs",
+          "default_variant": true,
+          "arch": "aarch64",
+          "format": "raw",
+          "compression": "xz",
+          "firmware": [],
+          "datasources": [
+            "nocloud"
+          ],
+          "ssh_key_injection": true,
+          "size": 596507412,
+          "locations": [
+            {
+              "url": "https://download.freebsd.org/releases/VM-IMAGES/14.4-RELEASE/aarch64/Latest/FreeBSD-14.4-RELEASE-arm64-aarch64-BASIC-CLOUDINIT-zfs.raw.xz",
+              "kind": "primary",
+              "redirects_off_host": false
+            }
+          ],
+          "integrity": {
+            "digests": [
+              {
+                "algorithm": "sha256",
+                "value": "9b4de54cf54d825630a7418919e44e9a5a6f51d758b377b6df41cf3974d1b615",
+                "source": {
+                  "url": "https://download.freebsd.org/releases/VM-IMAGES/14.4-RELEASE/aarch64/Latest/CHECKSUM.SHA256",
+                  "format": "bsd",
+                  "filename": "FreeBSD-14.4-RELEASE-arm64-aarch64-BASIC-CLOUDINIT-zfs.raw.xz"
+                }
+              }
+            ],
+            "signatures": [],
+            "http": {
+              "last_modified": "Fri, 06 Mar 2026 13:13:26 GMT",
+              "etag": "\"69aad2f6-238dfb14\""
+            }
+          }
         }
       ]
     }

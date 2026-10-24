@@ -46,6 +46,44 @@
               "etag": null
             }
           }
+        },
+        {
+          "variant": "minimal-vm-cloud",
+          "default_variant": true,
+          "arch": "aarch64",
+          "format": "qcow2",
+          "compression": "none",
+          "firmware": [],
+          "datasources": [
+            "nocloud"
+          ],
+          "ssh_key_injection": true,
+          "size": 323944448,
+          "locations": [
+            {
+              "url": "https://download.opensuse.org/distribution/leap/16.1/appliances/Leap-16.1-Minimal-VM.aarch64-Cloud-Build3.10.qcow2",
+              "kind": "primary",
+              "redirects_off_host": true
+            }
+          ],
+          "integrity": {
+            "digests": [
+              {
+                "algorithm": "sha256",
+                "value": "a5b653020be6cda59f0eb6a2d3ccd0f65668fae77bb666ab3bfff7f47cda679b",
+                "source": {
+                  "url": "https://download.opensuse.org/distribution/leap/16.1/appliances/Leap-16.1-Minimal-VM.aarch64-Cloud-Build3.10.qcow2.sha256",
+                  "format": "gnu",
+                  "filename": "Leap-16.1-Minimal-VM.aarch64-Cloud-Build3.10.qcow2"
+                }
+              }
+            ],
+            "signatures": [],
+            "http": {
+              "last_modified": null,
+              "etag": null
+            }
+          }
         }
       ]
     }

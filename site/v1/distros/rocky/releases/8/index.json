@@ -46,6 +46,44 @@
               "etag": "\"6657382c-7b210000\""
             }
           }
+        },
+        {
+          "variant": "base",
+          "default_variant": true,
+          "arch": "aarch64",
+          "format": "qcow2",
+          "compression": "none",
+          "firmware": [],
+          "datasources": [
+            "nocloud"
+          ],
+          "ssh_key_injection": true,
+          "size": 1925644288,
+          "locations": [
+            {
+              "url": "https://download.rockylinux.org/pub/rocky/8/images/aarch64/Rocky-8-GenericCloud-Base-8.10-20240528.0.aarch64.qcow2",
+              "kind": "primary",
+              "redirects_off_host": false
+            }
+          ],
+          "integrity": {
+            "digests": [
+              {
+                "algorithm": "sha256",
+                "value": "946b5b9845aa5e3ed98f1bc6ee9873201712a2aef01b87731aed16857e0ca13f",
+                "source": {
+                  "url": "https://download.rockylinux.org/pub/rocky/8/images/aarch64/Rocky-8-GenericCloud-Base-8.10-20240528.0.aarch64.qcow2.CHECKSUM",
+                  "format": "bsd",
+                  "filename": "Rocky-8-GenericCloud-Base-8.10-20240528.0.aarch64.qcow2"
+                }
+              }
+            ],
+            "signatures": [],
+            "http": {
+              "last_modified": "Wed, 29 May 2024 14:14:43 GMT",
+              "etag": "\"66573853-72c70000\""
+            }
+          }
         }
       ]
     }

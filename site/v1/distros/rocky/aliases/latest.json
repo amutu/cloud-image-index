@@ -53,6 +53,51 @@
               "etag": "\"6a14e778-207c0000\""
             }
           }
+        },
+        {
+          "variant": "base",
+          "default_variant": true,
+          "arch": "aarch64",
+          "format": "qcow2",
+          "compression": "none",
+          "firmware": [],
+          "datasources": [
+            "nocloud"
+          ],
+          "ssh_key_injection": true,
+          "size": 469368832,
+          "locations": [
+            {
+              "url": "https://download.rockylinux.org/pub/rocky/10/images/aarch64/Rocky-10-GenericCloud-Base-10.2-20260525.0.aarch64.qcow2",
+              "kind": "primary",
+              "redirects_off_host": false
+            }
+          ],
+          "integrity": {
+            "digests": [
+              {
+                "algorithm": "sha256",
+                "value": "457c8375e19496f43a25c4a6169fa11237536c53cef6f85a20ea3c5a751aa0f5",
+                "source": {
+                  "url": "https://download.rockylinux.org/pub/rocky/10/images/aarch64/Rocky-10-GenericCloud-Base-10.2-20260525.0.aarch64.qcow2.CHECKSUM",
+                  "format": "bsd",
+                  "filename": "Rocky-10-GenericCloud-Base-10.2-20260525.0.aarch64.qcow2"
+                }
+              }
+            ],
+            "signatures": [
+              {
+                "url": "https://download.rockylinux.org/pub/rocky/10/images/aarch64/Rocky-10-GenericCloud-Base-10.2-20260525.0.aarch64.qcow2.CHECKSUM.asc",
+                "kind": "pgp_detached",
+                "signs": "https://download.rockylinux.org/pub/rocky/10/images/aarch64/Rocky-10-GenericCloud-Base-10.2-20260525.0.aarch64.qcow2.CHECKSUM",
+                "key_url": null
+              }
+            ],
+            "http": {
+              "last_modified": "Tue, 26 May 2026 00:20:59 GMT",
+              "etag": "\"6a14e76b-1bfa0000\""
+            }
+          }
         }
       ]
     }

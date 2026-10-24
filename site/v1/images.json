@@ -6,24 +6,23 @@
         "name": "Ubuntu",
         "os_family": "linux",
         "homepage": "https://ubuntu.com/",
-        "checked_at": "2026-10-16T05:29:30.194036122Z"
+        "checked_at": "2026-10-24T08:28:12.184310711Z"
       },
       "release": {
-        "id": "resolute",
-        "version": "26.04",
-        "title": "26.04 LTS",
+        "id": "stonking",
+        "version": "26.10",
+        "title": "26.10",
         "aliases": [
-          "latest",
-          "lts"
+          "latest"
         ],
-        "eol_date": "2031-05-29",
+        "eol_date": "2027-07-15",
         "osinfo": null
       },
       "build": {
-        "build": "20260927",
+        "build": "20261019",
         "point_release": null,
         "published_at": null,
-        "first_seen": "2026-10-06T20:41:54.153023691Z",
+        "first_seen": "2026-10-24T08:28:12.184310711Z",
         "osinfo": null,
         "artifacts": [
           {
@@ -37,10 +36,10 @@
               "nocloud"
             ],
             "ssh_key_injection": true,
-            "size": 865115136,
+            "size": 876937216,
             "locations": [
               {
-                "url": "https://cloud-images.ubuntu.com/server/releases/resolute/release-20260927/ubuntu-26.04-server-cloudimg-amd64.img",
+                "url": "https://cloud-images.ubuntu.com/server/releases/stonking/release-20261019/ubuntu-26.10-server-cloudimg-amd64.img",
                 "kind": "primary",
                 "redirects_off_host": false
               }
@@ -49,25 +48,70 @@
               "digests": [
                 {
                   "algorithm": "sha256",
-                  "value": "8800651811af9a85465ad1d552add729947bb16488dddb4a9b5305a3d97332b2",
+                  "value": "a021682aff9c0d455315230f229138e4d1413c5bce96ec336e453a69086d9c2f",
                   "source": {
-                    "url": "https://cloud-images.ubuntu.com/server/releases/resolute/release-20260927/SHA256SUMS",
+                    "url": "https://cloud-images.ubuntu.com/server/releases/stonking/release-20261019/SHA256SUMS",
                     "format": "gnu",
-                    "filename": "ubuntu-26.04-server-cloudimg-amd64.img"
+                    "filename": "ubuntu-26.10-server-cloudimg-amd64.img"
                   }
                 }
               ],
               "signatures": [
                 {
-                  "url": "https://cloud-images.ubuntu.com/server/releases/resolute/release-20260927/SHA256SUMS.gpg",
+                  "url": "https://cloud-images.ubuntu.com/server/releases/stonking/release-20261019/SHA256SUMS.gpg",
                   "kind": "pgp_detached",
-                  "signs": "https://cloud-images.ubuntu.com/server/releases/resolute/release-20260927/SHA256SUMS",
+                  "signs": "https://cloud-images.ubuntu.com/server/releases/stonking/release-20261019/SHA256SUMS",
                   "key_url": null
                 }
               ],
               "http": {
-                "last_modified": "Tue, 29 Sep 2026 00:41:16 GMT",
-                "etag": "\"33909c00-65c9470b9e7b6\""
+                "last_modified": "Mon, 19 Oct 2026 23:39:12 GMT",
+                "etag": "\"34450000-65e3a0573ea92\""
+              }
+            }
+          },
+          {
+            "variant": "server",
+            "default_variant": true,
+            "arch": "aarch64",
+            "format": "qcow2",
+            "compression": "none",
+            "firmware": [],
+            "datasources": [
+              "nocloud"
+            ],
+            "ssh_key_injection": true,
+            "size": 976805888,
+            "locations": [
+              {
+                "url": "https://cloud-images.ubuntu.com/server/releases/stonking/release-20261019/ubuntu-26.10-server-cloudimg-arm64.img",
+                "kind": "primary",
+                "redirects_off_host": false
+              }
+            ],
+            "integrity": {
+              "digests": [
+                {
+                  "algorithm": "sha256",
+                  "value": "ef1ac0e0bfd3ab265507c9efe78f130960b808b940b4f03e68382f1fd3f34a1e",
+                  "source": {
+                    "url": "https://cloud-images.ubuntu.com/server/releases/stonking/release-20261019/SHA256SUMS",
+                    "format": "gnu",
+                    "filename": "ubuntu-26.10-server-cloudimg-arm64.img"
+                  }
+                }
+              ],
+              "signatures": [
+                {
+                  "url": "https://cloud-images.ubuntu.com/server/releases/stonking/release-20261019/SHA256SUMS.gpg",
+                  "kind": "pgp_detached",
+                  "signs": "https://cloud-images.ubuntu.com/server/releases/stonking/release-20261019/SHA256SUMS",
+                  "key_url": null
+                }
+              ],
+              "http": {
+                "last_modified": "Mon, 19 Oct 2026 23:39:48 GMT",
+                "etag": "\"3a38e000-65e3a07919bf5\""
               }
             }
           }
@@ -80,7 +124,125 @@
         "name": "Ubuntu",
         "os_family": "linux",
         "homepage": "https://ubuntu.com/",
-        "checked_at": "2026-10-16T05:29:30.194036122Z"
+        "checked_at": "2026-10-24T08:28:12.184310711Z"
+      },
+      "release": {
+        "id": "resolute",
+        "version": "26.04",
+        "title": "26.04 LTS",
+        "aliases": [
+          "lts"
+        ],
+        "eol_date": "2031-05-29",
+        "osinfo": null
+      },
+      "build": {
+        "build": "20261016",
+        "point_release": null,
+        "published_at": null,
+        "first_seen": "2026-10-24T08:28:12.184310711Z",
+        "osinfo": null,
+        "artifacts": [
+          {
+            "variant": "server",
+            "default_variant": true,
+            "arch": "x86_64",
+            "format": "qcow2",
+            "compression": "none",
+            "firmware": [],
+            "datasources": [
+              "nocloud"
+            ],
+            "ssh_key_injection": true,
+            "size": 859090944,
+            "locations": [
+              {
+                "url": "https://cloud-images.ubuntu.com/server/releases/resolute/release-20261016/ubuntu-26.04-server-cloudimg-amd64.img",
+                "kind": "primary",
+                "redirects_off_host": false
+              }
+            ],
+            "integrity": {
+              "digests": [
+                {
+                  "algorithm": "sha256",
+                  "value": "5645d0318ad21f643ebb1ac4567514620e9893380b07b0201fda163baa5b7eb5",
+                  "source": {
+                    "url": "https://cloud-images.ubuntu.com/server/releases/resolute/release-20261016/SHA256SUMS",
+                    "format": "gnu",
+                    "filename": "ubuntu-26.04-server-cloudimg-amd64.img"
+                  }
+                }
+              ],
+              "signatures": [
+                {
+                  "url": "https://cloud-images.ubuntu.com/server/releases/resolute/release-20261016/SHA256SUMS.gpg",
+                  "kind": "pgp_detached",
+                  "signs": "https://cloud-images.ubuntu.com/server/releases/resolute/release-20261016/SHA256SUMS",
+                  "key_url": null
+                }
+              ],
+              "http": {
+                "last_modified": "Tue, 20 Oct 2026 16:41:17 GMT",
+                "etag": "\"3334b000-65e484cb1cdd9\""
+              }
+            }
+          },
+          {
+            "variant": "server",
+            "default_variant": true,
+            "arch": "aarch64",
+            "format": "qcow2",
+            "compression": "none",
+            "firmware": [],
+            "datasources": [
+              "nocloud"
+            ],
+            "ssh_key_injection": true,
+            "size": 940373504,
+            "locations": [
+              {
+                "url": "https://cloud-images.ubuntu.com/server/releases/resolute/release-20261016/ubuntu-26.04-server-cloudimg-arm64.img",
+                "kind": "primary",
+                "redirects_off_host": false
+              }
+            ],
+            "integrity": {
+              "digests": [
+                {
+                  "algorithm": "sha256",
+                  "value": "8eb876c2ccc4b6ff89e4a65d511815923b285e04503ba465809bf587f763da24",
+                  "source": {
+                    "url": "https://cloud-images.ubuntu.com/server/releases/resolute/release-20261016/SHA256SUMS",
+                    "format": "gnu",
+                    "filename": "ubuntu-26.04-server-cloudimg-arm64.img"
+                  }
+                }
+              ],
+              "signatures": [
+                {
+                  "url": "https://cloud-images.ubuntu.com/server/releases/resolute/release-20261016/SHA256SUMS.gpg",
+                  "kind": "pgp_detached",
+                  "signs": "https://cloud-images.ubuntu.com/server/releases/resolute/release-20261016/SHA256SUMS",
+                  "key_url": null
+                }
+              ],
+              "http": {
+                "last_modified": "Tue, 20 Oct 2026 16:41:50 GMT",
+                "etag": "\"380cf600-65e484ea85f87\""
+              }
+            }
+          }
+        ]
+      }
+    },
+    {
+      "distro": {
+        "id": "ubuntu",
+        "name": "Ubuntu",
+        "os_family": "linux",
+        "homepage": "https://ubuntu.com/",
+        "checked_at": "2026-10-24T08:28:12.184310711Z"
       },
       "release": {
         "id": "noble",
@@ -91,10 +253,10 @@
         "osinfo": null
       },
       "build": {
-        "build": "20260926",
+        "build": "20261017",
         "point_release": null,
         "published_at": null,
-        "first_seen": "2026-10-06T20:41:54.153023691Z",
+        "first_seen": "2026-10-24T08:28:12.184310711Z",
         "osinfo": null,
         "artifacts": [
           {
@@ -108,10 +270,10 @@
               "nocloud"
             ],
             "ssh_key_injection": true,
-            "size": 625612288,
+            "size": 621284352,
             "locations": [
               {
-                "url": "https://cloud-images.ubuntu.com/server/releases/noble/release-20260926/ubuntu-24.04-server-cloudimg-amd64.img",
+                "url": "https://cloud-images.ubuntu.com/server/releases/noble/release-20261017/ubuntu-24.04-server-cloudimg-amd64.img",
                 "kind": "primary",
                 "redirects_off_host": false
               }
@@ -120,9 +282,9 @@
               "digests": [
                 {
                   "algorithm": "sha256",
-                  "value": "6a81c37564db9b1ee84e141922625e1d7c5b389b99bb3c572e0243607d5bb4d2",
+                  "value": "04e8f2461a16a44e78a370284471f29616cdd9baf1893df25807b71f985b6c94",
                   "source": {
-                    "url": "https://cloud-images.ubuntu.com/server/releases/noble/release-20260926/SHA256SUMS",
+                    "url": "https://cloud-images.ubuntu.com/server/releases/noble/release-20261017/SHA256SUMS",
                     "format": "gnu",
                     "filename": "ubuntu-24.04-server-cloudimg-amd64.img"
                   }
@@ -130,15 +292,60 @@
               ],
               "signatures": [
                 {
-                  "url": "https://cloud-images.ubuntu.com/server/releases/noble/release-20260926/SHA256SUMS.gpg",
+                  "url": "https://cloud-images.ubuntu.com/server/releases/noble/release-20261017/SHA256SUMS.gpg",
                   "kind": "pgp_detached",
-                  "signs": "https://cloud-images.ubuntu.com/server/releases/noble/release-20260926/SHA256SUMS",
+                  "signs": "https://cloud-images.ubuntu.com/server/releases/noble/release-20261017/SHA256SUMS",
                   "key_url": null
                 }
               ],
               "http": {
-                "last_modified": "Sat, 26 Sep 2026 18:31:16 GMT",
-                "etag": "\"254a1600-65c6709d0ff5c\""
+                "last_modified": "Sat, 17 Oct 2026 20:31:19 GMT",
+                "etag": "\"25080c00-65e0f29cd93d4\""
+              }
+            }
+          },
+          {
+            "variant": "server",
+            "default_variant": true,
+            "arch": "aarch64",
+            "format": "qcow2",
+            "compression": "none",
+            "firmware": [],
+            "datasources": [
+              "nocloud"
+            ],
+            "ssh_key_injection": true,
+            "size": 616522752,
+            "locations": [
+              {
+                "url": "https://cloud-images.ubuntu.com/server/releases/noble/release-20261017/ubuntu-24.04-server-cloudimg-arm64.img",
+                "kind": "primary",
+                "redirects_off_host": false
+              }
+            ],
+            "integrity": {
+              "digests": [
+                {
+                  "algorithm": "sha256",
+                  "value": "50e24e1fb79e89116e939d90aa7738f7af48c442fa1bc2510131e0b39c50348e",
+                  "source": {
+                    "url": "https://cloud-images.ubuntu.com/server/releases/noble/release-20261017/SHA256SUMS",
+                    "format": "gnu",
+                    "filename": "ubuntu-24.04-server-cloudimg-arm64.img"
+                  }
+                }
+              ],
+              "signatures": [
+                {
+                  "url": "https://cloud-images.ubuntu.com/server/releases/noble/release-20261017/SHA256SUMS.gpg",
+                  "kind": "pgp_detached",
+                  "signs": "https://cloud-images.ubuntu.com/server/releases/noble/release-20261017/SHA256SUMS",
+                  "key_url": null
+                }
+              ],
+              "http": {
+                "last_modified": "Sat, 17 Oct 2026 20:31:29 GMT",
+                "etag": "\"24bf6400-65e0f2a6f1419\""
               }
             }
           }
@@ -151,7 +358,7 @@
         "name": "Ubuntu",
         "os_family": "linux",
         "homepage": "https://ubuntu.com/",
-        "checked_at": "2026-10-16T05:29:30.194036122Z"
+        "checked_at": "2026-10-24T08:28:12.184310711Z"
       },
       "release": {
         "id": "jammy",
@@ -162,10 +369,10 @@
         "osinfo": null
       },
       "build": {
-        "build": "20261004",
+        "build": "20261020",
         "point_release": null,
         "published_at": null,
-        "first_seen": "2026-10-06T20:41:54.153023691Z",
+        "first_seen": "2026-10-24T08:28:12.184310711Z",
         "osinfo": null,
         "artifacts": [
           {
@@ -179,10 +386,10 @@
               "nocloud"
             ],
             "ssh_key_injection": true,
-            "size": 730497536,
+            "size": 730529792,
             "locations": [
               {
-                "url": "https://cloud-images.ubuntu.com/server/releases/jammy/release-20261004/ubuntu-22.04-server-cloudimg-amd64.img",
+                "url": "https://cloud-images.ubuntu.com/server/releases/jammy/release-20261020/ubuntu-22.04-server-cloudimg-amd64.img",
                 "kind": "primary",
                 "redirects_off_host": false
               }
@@ -191,9 +398,9 @@
               "digests": [
                 {
                   "algorithm": "sha256",
-                  "value": "012d81fade7e8ff4428fc35dfeee711d66d1f47d5ea9c5c8ced96a85b959835c",
+                  "value": "2099e63da0b822ef8e05e3d596c1b402eaaae658fc08ab919cb8495bfcdc488b",
                   "source": {
-                    "url": "https://cloud-images.ubuntu.com/server/releases/jammy/release-20261004/SHA256SUMS",
+                    "url": "https://cloud-images.ubuntu.com/server/releases/jammy/release-20261020/SHA256SUMS",
                     "format": "gnu",
                     "filename": "ubuntu-22.04-server-cloudimg-amd64.img"
                   }
@@ -201,15 +408,60 @@
               ],
               "signatures": [
                 {
-                  "url": "https://cloud-images.ubuntu.com/server/releases/jammy/release-20261004/SHA256SUMS.gpg",
+                  "url": "https://cloud-images.ubuntu.com/server/releases/jammy/release-20261020/SHA256SUMS.gpg",
                   "kind": "pgp_detached",
-                  "signs": "https://cloud-images.ubuntu.com/server/releases/jammy/release-20261004/SHA256SUMS",
+                  "signs": "https://cloud-images.ubuntu.com/server/releases/jammy/release-20261020/SHA256SUMS",
                   "key_url": null
                 }
               ],
               "http": {
-                "last_modified": "Sun, 04 Oct 2026 21:11:35 GMT",
-                "etag": "\"2b8a8200-65d0a35e5ca58\""
+                "last_modified": "Tue, 20 Oct 2026 19:11:34 GMT",
+                "etag": "\"2b8b0000-65e4a6620ca8d\""
+              }
+            }
+          },
+          {
+            "variant": "server",
+            "default_variant": true,
+            "arch": "aarch64",
+            "format": "qcow2",
+            "compression": "none",
+            "firmware": [],
+            "datasources": [
+              "nocloud"
+            ],
+            "ssh_key_injection": true,
+            "size": 700955648,
+            "locations": [
+              {
+                "url": "https://cloud-images.ubuntu.com/server/releases/jammy/release-20261020/ubuntu-22.04-server-cloudimg-arm64.img",
+                "kind": "primary",
+                "redirects_off_host": false
+              }
+            ],
+            "integrity": {
+              "digests": [
+                {
+                  "algorithm": "sha256",
+                  "value": "e720ae083f93baae47ac9b76a096243fe1027f60998cf1127a47a74c880f64ed",
+                  "source": {
+                    "url": "https://cloud-images.ubuntu.com/server/releases/jammy/release-20261020/SHA256SUMS",
+                    "format": "gnu",
+                    "filename": "ubuntu-22.04-server-cloudimg-arm64.img"
+                  }
+                }
+              ],
+              "signatures": [
+                {
+                  "url": "https://cloud-images.ubuntu.com/server/releases/jammy/release-20261020/SHA256SUMS.gpg",
+                  "kind": "pgp_detached",
+                  "signs": "https://cloud-images.ubuntu.com/server/releases/jammy/release-20261020/SHA256SUMS",
+                  "key_url": null
+                }
+              ],
+              "http": {
+                "last_modified": "Tue, 20 Oct 2026 19:11:57 GMT",
+                "etag": "\"29c7bc00-65e4a6781d29d\""
               }
             }
           }
@@ -222,7 +474,7 @@
         "name": "Debian",
         "os_family": "linux",
         "homepage": "https://www.debian.org/",
-        "checked_at": "2026-10-16T05:29:50.898975673Z"
+        "checked_at": "2026-10-24T08:28:12.184310711Z"
       },
       "release": {
         "id": "trixie",
@@ -235,10 +487,10 @@
         "osinfo": null
       },
       "build": {
-        "build": "20261015-2632",
+        "build": "20261021-2638",
         "point_release": "13.7",
         "published_at": null,
-        "first_seen": "2026-10-16T05:29:50.898975673Z",
+        "first_seen": "2026-10-24T08:28:12.184310711Z",
         "osinfo": null,
         "artifacts": [
           {
@@ -252,10 +504,10 @@
               "nocloud"
             ],
             "ssh_key_injection": true,
-            "size": 341180416,
+            "size": 342294528,
             "locations": [
               {
-                "url": "https://cloud.debian.org/images/cloud/trixie/20261015-2632/debian-13-genericcloud-amd64-20261015-2632.qcow2",
+                "url": "https://cloud.debian.org/images/cloud/trixie/20261021-2638/debian-13-genericcloud-amd64-20261021-2638.qcow2",
                 "kind": "primary",
                 "redirects_off_host": true
               }
@@ -264,11 +516,49 @@
               "digests": [
                 {
                   "algorithm": "sha512",
-                  "value": "7f1d06b629fa01241ec5817735777d0554554ff8c8d9dc27f9eac65ba3c3a6f859deb6079ebc9c65795d1955abd00a77aa3ff9cb84ae6307dfbbd8b2e398dab2",
+                  "value": "16e0965312c56feb331049d45d2b1b5778f3f942a33d4300eedbb97527707f2bea87c0006f3e4cc7a25fadbff739c4e235a51fb9bcd1b66fd554f7f8e80ba45c",
                   "source": {
-                    "url": "https://cloud.debian.org/images/cloud/trixie/20261015-2632/SHA512SUMS",
+                    "url": "https://cloud.debian.org/images/cloud/trixie/20261021-2638/SHA512SUMS",
                     "format": "gnu",
-                    "filename": "debian-13-genericcloud-amd64-20261015-2632.qcow2"
+                    "filename": "debian-13-genericcloud-amd64-20261021-2638.qcow2"
+                  }
+                }
+              ],
+              "signatures": [],
+              "http": {
+                "last_modified": null,
+                "etag": null
+              }
+            }
+          },
+          {
+            "variant": "genericcloud",
+            "default_variant": true,
+            "arch": "aarch64",
+            "format": "qcow2",
+            "compression": "none",
+            "firmware": [],
+            "datasources": [
+              "nocloud"
+            ],
+            "ssh_key_injection": true,
+            "size": 336265216,
+            "locations": [
+              {
+                "url": "https://cloud.debian.org/images/cloud/trixie/20261021-2638/debian-13-genericcloud-arm64-20261021-2638.qcow2",
+                "kind": "primary",
+                "redirects_off_host": true
+              }
+            ],
+            "integrity": {
+              "digests": [
+                {
+                  "algorithm": "sha512",
+                  "value": "e66eea33be9e1345e6c8737e65096e5b31031f4bd4f3f7d59a6f8b53f995a9c41996e97c5b4ab89f1587663efed11dfbd10c4d35b7bcc85b2545e58a12cd0e83",
+                  "source": {
+                    "url": "https://cloud.debian.org/images/cloud/trixie/20261021-2638/SHA512SUMS",
+                    "format": "gnu",
+                    "filename": "debian-13-genericcloud-arm64-20261021-2638.qcow2"
                   }
                 }
               ],
@@ -288,7 +578,7 @@
         "name": "Debian",
         "os_family": "linux",
         "homepage": "https://www.debian.org/",
-        "checked_at": "2026-10-16T05:29:50.898975673Z"
+        "checked_at": "2026-10-24T08:28:12.184310711Z"
       },
       "release": {
         "id": "bookworm",
@@ -299,10 +589,10 @@
         "osinfo": null
       },
       "build": {
-        "build": "20261015-2632",
+        "build": "20261021-2638",
         "point_release": "12.15",
         "published_at": null,
-        "first_seen": "2026-10-16T05:29:50.898975673Z",
+        "first_seen": "2026-10-24T08:28:12.184310711Z",
         "osinfo": null,
         "artifacts": [
           {
@@ -316,10 +606,10 @@
               "nocloud"
             ],
             "ssh_key_injection": true,
-            "size": 349044736,
+            "size": 347799552,
             "locations": [
               {
-                "url": "https://cloud.debian.org/images/cloud/bookworm/20261015-2632/debian-12-genericcloud-amd64-20261015-2632.qcow2",
+                "url": "https://cloud.debian.org/images/cloud/bookworm/20261021-2638/debian-12-genericcloud-amd64-20261021-2638.qcow2",
                 "kind": "primary",
                 "redirects_off_host": true
               }
@@ -328,11 +618,49 @@
               "digests": [
                 {
                   "algorithm": "sha512",
-                  "value": "56c0bd55b6623f2739f377e983d2872e7b208d0cb9c3ba4e93d3f72929026da03637c598b3bd472b29998c31c8a4c17d8e6ae1c556852a8b83a66a09bf5c2b37",
+                  "value": "9f181877006e8d9ca4f4554eba8729a829936f0f7d1db5e77f69b1ef0f6bc372b4d46f3dae39b10d84f9131496c2cc1d449264f26577fe934a79de5a5512a3dd",
                   "source": {
-                    "url": "https://cloud.debian.org/images/cloud/bookworm/20261015-2632/SHA512SUMS",
+                    "url": "https://cloud.debian.org/images/cloud/bookworm/20261021-2638/SHA512SUMS",
                     "format": "gnu",
-                    "filename": "debian-12-genericcloud-amd64-20261015-2632.qcow2"
+                    "filename": "debian-12-genericcloud-amd64-20261021-2638.qcow2"
+                  }
+                }
+              ],
+              "signatures": [],
+              "http": {
+                "last_modified": null,
+                "etag": null
+              }
+            }
+          },
+          {
+            "variant": "genericcloud",
+            "default_variant": true,
+            "arch": "aarch64",
+            "format": "qcow2",
+            "compression": "none",
+            "firmware": [],
+            "datasources": [
+              "nocloud"
+            ],
+            "ssh_key_injection": true,
+            "size": 341311488,
+            "locations": [
+              {
+                "url": "https://cloud.debian.org/images/cloud/bookworm/20261021-2638/debian-12-genericcloud-arm64-20261021-2638.qcow2",
+                "kind": "primary",
+                "redirects_off_host": true
+              }
+            ],
+            "integrity": {
+              "digests": [
+                {
+                  "algorithm": "sha512",
+                  "value": "7aab8897223cf51f0559e45654a11c03a695ec94fe016a6f2dcb3ede3c5cacf314e0918f77fef571962c3a3a49470eb3d4dc967f848682700ab00ba38e8c5b6f",
+                  "source": {
+                    "url": "https://cloud.debian.org/images/cloud/bookworm/20261021-2638/SHA512SUMS",
+                    "format": "gnu",
+                    "filename": "debian-12-genericcloud-arm64-20261021-2638.qcow2"
                   }
                 }
               ],
@@ -352,7 +680,7 @@
         "name": "Rocky Linux",
         "os_family": "linux",
         "homepage": "https://rockylinux.org/",
-        "checked_at": "2026-10-16T05:30:47.904675200Z"
+        "checked_at": "2026-10-24T08:28:12.184310711Z"
       },
       "release": {
         "id": "10",
@@ -415,6 +743,51 @@
                 "etag": "\"6a14e778-207c0000\""
               }
             }
+          },
+          {
+            "variant": "base",
+            "default_variant": true,
+            "arch": "aarch64",
+            "format": "qcow2",
+            "compression": "none",
+            "firmware": [],
+            "datasources": [
+              "nocloud"
+            ],
+            "ssh_key_injection": true,
+            "size": 469368832,
+            "locations": [
+              {
+                "url": "https://download.rockylinux.org/pub/rocky/10/images/aarch64/Rocky-10-GenericCloud-Base-10.2-20260525.0.aarch64.qcow2",
+                "kind": "primary",
+                "redirects_off_host": false
+              }
+            ],
+            "integrity": {
+              "digests": [
+                {
+                  "algorithm": "sha256",
+                  "value": "457c8375e19496f43a25c4a6169fa11237536c53cef6f85a20ea3c5a751aa0f5",
+                  "source": {
+                    "url": "https://download.rockylinux.org/pub/rocky/10/images/aarch64/Rocky-10-GenericCloud-Base-10.2-20260525.0.aarch64.qcow2.CHECKSUM",
+                    "format": "bsd",
+                    "filename": "Rocky-10-GenericCloud-Base-10.2-20260525.0.aarch64.qcow2"
+                  }
+                }
+              ],
+              "signatures": [
+                {
+                  "url": "https://download.rockylinux.org/pub/rocky/10/images/aarch64/Rocky-10-GenericCloud-Base-10.2-20260525.0.aarch64.qcow2.CHECKSUM.asc",
+                  "kind": "pgp_detached",
+                  "signs": "https://download.rockylinux.org/pub/rocky/10/images/aarch64/Rocky-10-GenericCloud-Base-10.2-20260525.0.aarch64.qcow2.CHECKSUM",
+                  "key_url": null
+                }
+              ],
+              "http": {
+                "last_modified": "Tue, 26 May 2026 00:20:59 GMT",
+                "etag": "\"6a14e76b-1bfa0000\""
+              }
+            }
           }
         ]
       }
@@ -425,7 +798,7 @@
         "name": "Rocky Linux",
         "os_family": "linux",
         "homepage": "https://rockylinux.org/",
-        "checked_at": "2026-10-16T05:30:47.904675200Z"
+        "checked_at": "2026-10-24T08:28:12.184310711Z"
       },
       "release": {
         "id": "9",
@@ -486,6 +859,51 @@
                 "etag": "\"6a14aa25-26810000\""
               }
             }
+          },
+          {
+            "variant": "base",
+            "default_variant": true,
+            "arch": "aarch64",
+            "format": "qcow2",
+            "compression": "none",
+            "firmware": [],
+            "datasources": [
+              "nocloud"
+            ],
+            "ssh_key_injection": true,
+            "size": 519831552,
+            "locations": [
+              {
+                "url": "https://download.rockylinux.org/pub/rocky/9/images/aarch64/Rocky-9-GenericCloud-Base-9.8-20260525.0.aarch64.qcow2",
+                "kind": "primary",
+                "redirects_off_host": false
+              }
+            ],
+            "integrity": {
+              "digests": [
+                {
+                  "algorithm": "sha256",
+                  "value": "24692a444f1f0b8bb95375c38c8b43f8099a115347623691be2c330b40c8a1fe",
+                  "source": {
+                    "url": "https://download.rockylinux.org/pub/rocky/9/images/aarch64/Rocky-9-GenericCloud-Base-9.8-20260525.0.aarch64.qcow2.CHECKSUM",
+                    "format": "bsd",
+                    "filename": "Rocky-9-GenericCloud-Base-9.8-20260525.0.aarch64.qcow2"
+                  }
+                }
+              ],
+              "signatures": [
+                {
+                  "url": "https://download.rockylinux.org/pub/rocky/9/images/aarch64/Rocky-9-GenericCloud-Base-9.8-20260525.0.aarch64.qcow2.CHECKSUM.asc",
+                  "kind": "pgp_detached",
+                  "signs": "https://download.rockylinux.org/pub/rocky/9/images/aarch64/Rocky-9-GenericCloud-Base-9.8-20260525.0.aarch64.qcow2.CHECKSUM",
+                  "key_url": null
+                }
+              ],
+              "http": {
+                "last_modified": "Mon, 25 May 2026 20:04:54 GMT",
+                "etag": "\"6a14ab66-1efc0000\""
+              }
+            }
           }
         ]
       }
@@ -496,7 +914,7 @@
         "name": "Rocky Linux",
         "os_family": "linux",
         "homepage": "https://rockylinux.org/",
-        "checked_at": "2026-10-16T05:30:47.904675200Z"
+        "checked_at": "2026-10-24T08:28:12.184310711Z"
       },
       "release": {
         "id": "8",
@@ -550,6 +968,44 @@
                 "etag": "\"6657382c-7b210000\""
               }
             }
+          },
+          {
+            "variant": "base",
+            "default_variant": true,
+            "arch": "aarch64",
+            "format": "qcow2",
+            "compression": "none",
+            "firmware": [],
+            "datasources": [
+              "nocloud"
+            ],
+            "ssh_key_injection": true,
+            "size": 1925644288,
+            "locations": [
+              {
+                "url": "https://download.rockylinux.org/pub/rocky/8/images/aarch64/Rocky-8-GenericCloud-Base-8.10-20240528.0.aarch64.qcow2",
+                "kind": "primary",
+                "redirects_off_host": false
+              }
+            ],
+            "integrity": {
+              "digests": [
+                {
+                  "algorithm": "sha256",
+                  "value": "946b5b9845aa5e3ed98f1bc6ee9873201712a2aef01b87731aed16857e0ca13f",
+                  "source": {
+                    "url": "https://download.rockylinux.org/pub/rocky/8/images/aarch64/Rocky-8-GenericCloud-Base-8.10-20240528.0.aarch64.qcow2.CHECKSUM",
+                    "format": "bsd",
+                    "filename": "Rocky-8-GenericCloud-Base-8.10-20240528.0.aarch64.qcow2"
+                  }
+                }
+              ],
+              "signatures": [],
+              "http": {
+                "last_modified": "Wed, 29 May 2024 14:14:43 GMT",
+                "etag": "\"66573853-72c70000\""
+              }
+            }
           }
         ]
       }
@@ -560,7 +1016,7 @@
         "name": "AlmaLinux",
         "os_family": "linux",
         "homepage": "https://almalinux.org/",
-        "checked_at": "2026-10-16T05:29:32.058027718Z"
+        "checked_at": "2026-10-24T08:28:12.184310711Z"
       },
       "release": {
         "id": "10",
@@ -623,6 +1079,51 @@
                 "etag": "\"6acc6808-1dad0000\""
               }
             }
+          },
+          {
+            "variant": "genericcloud",
+            "default_variant": true,
+            "arch": "aarch64",
+            "format": "qcow2",
+            "compression": "none",
+            "firmware": [],
+            "datasources": [
+              "nocloud"
+            ],
+            "ssh_key_injection": true,
+            "size": 478937088,
+            "locations": [
+              {
+                "url": "https://repo.almalinux.org/almalinux/10/cloud/aarch64/images/AlmaLinux-10-GenericCloud-10.2-20261012.0.aarch64.qcow2",
+                "kind": "primary",
+                "redirects_off_host": false
+              }
+            ],
+            "integrity": {
+              "digests": [
+                {
+                  "algorithm": "sha256",
+                  "value": "ca65d1c32430acd84e9126c2e48f3b4110cd649a592712bfb570a6650e7e19e7",
+                  "source": {
+                    "url": "https://repo.almalinux.org/almalinux/10/cloud/aarch64/images/CHECKSUM",
+                    "format": "gnu",
+                    "filename": "AlmaLinux-10-GenericCloud-10.2-20261012.0.aarch64.qcow2"
+                  }
+                }
+              ],
+              "signatures": [
+                {
+                  "url": "https://repo.almalinux.org/almalinux/10/cloud/aarch64/images/CHECKSUM.asc",
+                  "kind": "pgp_detached",
+                  "signs": "https://repo.almalinux.org/almalinux/10/cloud/aarch64/images/CHECKSUM",
+                  "key_url": null
+                }
+              ],
+              "http": {
+                "last_modified": "Mon, 12 Oct 2026 05:02:55 GMT",
+                "etag": "\"6acc69ff-1c8c0000\""
+              }
+            }
           }
         ]
       }
@@ -633,7 +1134,7 @@
         "name": "AlmaLinux",
         "os_family": "linux",
         "homepage": "https://almalinux.org/",
-        "checked_at": "2026-10-16T05:29:32.058027718Z"
+        "checked_at": "2026-10-24T08:28:12.184310711Z"
       },
       "release": {
         "id": "9",
@@ -694,6 +1195,51 @@
                 "etag": "\"6ac32ff4-22250000\""
               }
             }
+          },
+          {
+            "variant": "genericcloud",
+            "default_variant": true,
+            "arch": "aarch64",
+            "format": "qcow2",
+            "compression": "none",
+            "firmware": [],
+            "datasources": [
+              "nocloud"
+            ],
+            "ssh_key_injection": true,
+            "size": 483262464,
+            "locations": [
+              {
+                "url": "https://repo.almalinux.org/almalinux/9/cloud/aarch64/images/AlmaLinux-9-GenericCloud-9.8-20261005.aarch64.qcow2",
+                "kind": "primary",
+                "redirects_off_host": false
+              }
+            ],
+            "integrity": {
+              "digests": [
+                {
+                  "algorithm": "sha256",
+                  "value": "15cf8257cb3c293268898309fe9f7d70e893b1eddff99bac9d7e53a2155d00ce",
+                  "source": {
+                    "url": "https://repo.almalinux.org/almalinux/9/cloud/aarch64/images/CHECKSUM",
+                    "format": "gnu",
+                    "filename": "AlmaLinux-9-GenericCloud-9.8-20261005.aarch64.qcow2"
+                  }
+                }
+              ],
+              "signatures": [
+                {
+                  "url": "https://repo.almalinux.org/almalinux/9/cloud/aarch64/images/CHECKSUM.asc",
+                  "kind": "pgp_detached",
+                  "signs": "https://repo.almalinux.org/almalinux/9/cloud/aarch64/images/CHECKSUM",
+                  "key_url": null
+                }
+              ],
+              "http": {
+                "last_modified": "Mon, 05 Oct 2026 05:12:09 GMT",
+                "etag": "\"6ac331a9-1cce0000\""
+              }
+            }
           }
         ]
       }
@@ -704,7 +1250,7 @@
         "name": "AlmaLinux",
         "os_family": "linux",
         "homepage": "https://almalinux.org/",
-        "checked_at": "2026-10-16T05:29:32.058027718Z"
+        "checked_at": "2026-10-24T08:28:12.184310711Z"
       },
       "release": {
         "id": "8",
@@ -765,39 +1311,11 @@
                 "etag": "\"6ab9f1a5-62b50000\""
               }
             }
-          }
-        ]
-      }
-    },
-    {
-      "distro": {
-        "id": "centos-stream",
-        "name": "CentOS Stream",
-        "os_family": "linux",
-        "homepage": "https://www.centos.org/",
-        "checked_at": "2026-10-16T05:29:45.626471285Z"
-      },
-      "release": {
-        "id": "10",
-        "version": "10",
-        "title": "CentOS Stream 10",
-        "aliases": [
-          "latest"
-        ],
-        "eol_date": null,
-        "osinfo": null
-      },
-      "build": {
-        "build": "20261013.0",
-        "point_release": null,
-        "published_at": null,
-        "first_seen": "2026-10-14T05:30:03.398966119Z",
-        "osinfo": null,
-        "artifacts": [
+          },
           {
             "variant": "genericcloud",
             "default_variant": true,
-            "arch": "x86_64",
+            "arch": "aarch64",
             "format": "qcow2",
             "compression": "none",
             "firmware": [],
@@ -805,10 +1323,10 @@
               "nocloud"
             ],
             "ssh_key_injection": true,
-            "size": 1045299200,
+            "size": 1495138304,
             "locations": [
               {
-                "url": "https://cloud.centos.org/centos/10-stream/x86_64/images/CentOS-Stream-GenericCloud-10-20261013.0.x86_64.qcow2",
+                "url": "https://repo.almalinux.org/almalinux/8/cloud/aarch64/images/AlmaLinux-8-GenericCloud-8.10-20260928.aarch64.qcow2",
                 "kind": "primary",
                 "redirects_off_host": false
               }
@@ -817,18 +1335,25 @@
               "digests": [
                 {
                   "algorithm": "sha256",
-                  "value": "a88076a3b342d97cd9f980ef7e36ab647f174338bce0d999963748e4cc698847",
+                  "value": "b5deb2b8c9d19a92b5d8f12cdbdc20d255ed48e397fb5321a7ccf23f854b5a54",
                   "source": {
-                    "url": "https://cloud.centos.org/centos/10-stream/x86_64/images/CentOS-Stream-GenericCloud-10-20261013.0.x86_64.qcow2.SHA256SUM",
-                    "format": "bsd",
-                    "filename": "CentOS-Stream-GenericCloud-10-20261013.0.x86_64.qcow2"
+                    "url": "https://repo.almalinux.org/almalinux/8/cloud/aarch64/images/CHECKSUM",
+                    "format": "gnu",
+                    "filename": "AlmaLinux-8-GenericCloud-8.10-20260928.aarch64.qcow2"
                   }
                 }
               ],
-              "signatures": [],
+              "signatures": [
+                {
+                  "url": "https://repo.almalinux.org/almalinux/8/cloud/aarch64/images/CHECKSUM.asc",
+                  "kind": "pgp_detached",
+                  "signs": "https://repo.almalinux.org/almalinux/8/cloud/aarch64/images/CHECKSUM",
+                  "key_url": null
+                }
+              ],
               "http": {
-                "last_modified": "Wed, 14 Oct 2026 01:19:21 GMT",
-                "etag": "\"3e4e0000-65dc2b8860ba7\""
+                "last_modified": "Mon, 28 Sep 2026 05:13:46 GMT",
+                "etag": "\"6ab9f78a-591e0000\""
               }
             }
           }
@@ -841,21 +1366,23 @@
         "name": "CentOS Stream",
         "os_family": "linux",
         "homepage": "https://www.centos.org/",
-        "checked_at": "2026-10-16T05:29:45.626471285Z"
+        "checked_at": "2026-10-24T08:28:12.184310711Z"
       },
       "release": {
-        "id": "9",
-        "version": "9",
-        "title": "CentOS Stream 9",
-        "aliases": [],
+        "id": "10",
+        "version": "10",
+        "title": "CentOS Stream 10",
+        "aliases": [
+          "latest"
+        ],
         "eol_date": null,
         "osinfo": null
       },
       "build": {
-        "build": "20261013.0",
+        "build": "20261021.0",
         "point_release": null,
         "published_at": null,
-        "first_seen": "2026-10-14T05:30:03.398966119Z",
+        "first_seen": "2026-10-24T08:28:12.184310711Z",
         "osinfo": null,
         "artifacts": [
           {
@@ -869,10 +1396,10 @@
               "nocloud"
             ],
             "ssh_key_injection": true,
-            "size": 1276641280,
+            "size": 1045692416,
             "locations": [
               {
-                "url": "https://cloud.centos.org/centos/9-stream/x86_64/images/CentOS-Stream-GenericCloud-9-20261013.0.x86_64.qcow2",
+                "url": "https://cloud.centos.org/centos/10-stream/x86_64/images/CentOS-Stream-GenericCloud-10-20261021.0.x86_64.qcow2",
                 "kind": "primary",
                 "redirects_off_host": false
               }
@@ -881,18 +1408,158 @@
               "digests": [
                 {
                   "algorithm": "sha256",
-                  "value": "6178901e812a08e1c36e5adac2992be65a409dfb61812a6b630b2488fc0644b3",
+                  "value": "f79f96b884b94e89b97386173fc1ebf8d20842a65f55da0f365a5dddf5c72e6e",
                   "source": {
-                    "url": "https://cloud.centos.org/centos/9-stream/x86_64/images/CentOS-Stream-GenericCloud-9-20261013.0.x86_64.qcow2.SHA256SUM",
+                    "url": "https://cloud.centos.org/centos/10-stream/x86_64/images/CentOS-Stream-GenericCloud-10-20261021.0.x86_64.qcow2.SHA256SUM",
                     "format": "bsd",
-                    "filename": "CentOS-Stream-GenericCloud-9-20261013.0.x86_64.qcow2"
+                    "filename": "CentOS-Stream-GenericCloud-10-20261021.0.x86_64.qcow2"
                   }
                 }
               ],
               "signatures": [],
               "http": {
-                "last_modified": "Wed, 14 Oct 2026 02:43:23 GMT",
-                "etag": "\"4c180000-65dc3e518fcc2\""
+                "last_modified": "Thu, 22 Oct 2026 05:05:29 GMT",
+                "etag": "\"3e540000-65e66cff79e73\""
+              }
+            }
+          },
+          {
+            "variant": "genericcloud",
+            "default_variant": true,
+            "arch": "aarch64",
+            "format": "qcow2",
+            "compression": "none",
+            "firmware": [],
+            "datasources": [
+              "nocloud"
+            ],
+            "ssh_key_injection": true,
+            "size": 885456896,
+            "locations": [
+              {
+                "url": "https://cloud.centos.org/centos/10-stream/aarch64/images/CentOS-Stream-GenericCloud-10-20261021.0.aarch64.qcow2",
+                "kind": "primary",
+                "redirects_off_host": false
+              }
+            ],
+            "integrity": {
+              "digests": [
+                {
+                  "algorithm": "sha256",
+                  "value": "faf557e0c5b8746d74d4f3fbc4b3113498e045a63c7ad06d4570e2ab531af048",
+                  "source": {
+                    "url": "https://cloud.centos.org/centos/10-stream/aarch64/images/CentOS-Stream-GenericCloud-10-20261021.0.aarch64.qcow2.SHA256SUM",
+                    "format": "bsd",
+                    "filename": "CentOS-Stream-GenericCloud-10-20261021.0.aarch64.qcow2"
+                  }
+                }
+              ],
+              "signatures": [],
+              "http": {
+                "last_modified": "Thu, 22 Oct 2026 05:04:55 GMT",
+                "etag": "\"34c70000-65e66cdf9aeaa\""
+              }
+            }
+          }
+        ]
+      }
+    },
+    {
+      "distro": {
+        "id": "centos-stream",
+        "name": "CentOS Stream",
+        "os_family": "linux",
+        "homepage": "https://www.centos.org/",
+        "checked_at": "2026-10-24T08:28:12.184310711Z"
+      },
+      "release": {
+        "id": "9",
+        "version": "9",
+        "title": "CentOS Stream 9",
+        "aliases": [],
+        "eol_date": null,
+        "osinfo": null
+      },
+      "build": {
+        "build": "20261023.1",
+        "point_release": null,
+        "published_at": null,
+        "first_seen": "2026-10-24T08:28:12.184310711Z",
+        "osinfo": null,
+        "artifacts": [
+          {
+            "variant": "genericcloud",
+            "default_variant": true,
+            "arch": "x86_64",
+            "format": "qcow2",
+            "compression": "none",
+            "firmware": [],
+            "datasources": [
+              "nocloud"
+            ],
+            "ssh_key_injection": true,
+            "size": 1276837888,
+            "locations": [
+              {
+                "url": "https://cloud.centos.org/centos/9-stream/x86_64/images/CentOS-Stream-GenericCloud-9-20261023.1.x86_64.qcow2",
+                "kind": "primary",
+                "redirects_off_host": false
+              }
+            ],
+            "integrity": {
+              "digests": [
+                {
+                  "algorithm": "sha256",
+                  "value": "c705412b3b80cace91f1a205c685fc1da168637fed4f3fce022c2147d5276d18",
+                  "source": {
+                    "url": "https://cloud.centos.org/centos/9-stream/x86_64/images/CentOS-Stream-GenericCloud-9-20261023.1.x86_64.qcow2.SHA256SUM",
+                    "format": "bsd",
+                    "filename": "CentOS-Stream-GenericCloud-9-20261023.1.x86_64.qcow2"
+                  }
+                }
+              ],
+              "signatures": [],
+              "http": {
+                "last_modified": "Sat, 24 Oct 2026 06:24:43 GMT",
+                "etag": "\"4c1b0000-65e902708b222\""
+              }
+            }
+          },
+          {
+            "variant": "genericcloud",
+            "default_variant": true,
+            "arch": "aarch64",
+            "format": "qcow2",
+            "compression": "none",
+            "firmware": [],
+            "datasources": [
+              "nocloud"
+            ],
+            "ssh_key_injection": true,
+            "size": 1192624128,
+            "locations": [
+              {
+                "url": "https://cloud.centos.org/centos/9-stream/aarch64/images/CentOS-Stream-GenericCloud-9-20261023.1.aarch64.qcow2",
+                "kind": "primary",
+                "redirects_off_host": false
+              }
+            ],
+            "integrity": {
+              "digests": [
+                {
+                  "algorithm": "sha256",
+                  "value": "72d7efb6e1692f7faa28e41e74e404192c38e4a97b65b4cfcfe4d71d813739b5",
+                  "source": {
+                    "url": "https://cloud.centos.org/centos/9-stream/aarch64/images/CentOS-Stream-GenericCloud-9-20261023.1.aarch64.qcow2.SHA256SUM",
+                    "format": "bsd",
+                    "filename": "CentOS-Stream-GenericCloud-9-20261023.1.aarch64.qcow2"
+                  }
+                }
+              ],
+              "signatures": [],
+              "http": {
+                "last_modified": "Sat, 24 Oct 2026 06:23:48 GMT",
+                "etag": "\"47160000-65e9023bb4c50\""
               }
             }
           }
@@ -1122,7 +1789,7 @@
         "name": "Oracle Linux",
         "os_family": "linux",
         "homepage": "https://www.oracle.com/linux/",
-        "checked_at": "2026-10-16T05:29:44.052704682Z"
+        "checked_at": "2026-10-24T08:28:12.184310711Z"
       },
       "release": {
         "id": "10",
@@ -1188,7 +1855,73 @@
         "name": "Oracle Linux",
         "os_family": "linux",
         "homepage": "https://www.oracle.com/linux/",
-        "checked_at": "2026-10-16T05:29:44.052704682Z"
+        "checked_at": "2026-10-24T08:28:12.184310711Z"
+      },
+      "release": {
+        "id": "10",
+        "version": "10.1-b291",
+        "title": "Oracle Linux 10.1",
+        "aliases": [
+          "latest"
+        ],
+        "eol_date": null,
+        "osinfo": null
+      },
+      "build": {
+        "build": "10.1-b178",
+        "point_release": "10.1",
+        "published_at": null,
+        "first_seen": "2026-10-24T08:28:12.184310711Z",
+        "osinfo": null,
+        "artifacts": [
+          {
+            "variant": "kvm-cloud",
+            "default_variant": true,
+            "arch": "aarch64",
+            "format": "qcow2",
+            "compression": "none",
+            "firmware": [],
+            "datasources": [
+              "nocloud"
+            ],
+            "ssh_key_injection": true,
+            "size": 749273088,
+            "locations": [
+              {
+                "url": "https://yum.oracle.com/templates/OracleLinux/OL10/u1/aarch64/OL10U1_aarch64-kvm-cloud-b178.qcow2",
+                "kind": "primary",
+                "redirects_off_host": false
+              }
+            ],
+            "integrity": {
+              "digests": [
+                {
+                  "algorithm": "sha256",
+                  "value": "e203063e0e8b2752a896787ecc44fc506527055ec819b1422a297d60ad968b20",
+                  "source": {
+                    "url": "https://yum.oracle.com/oracle-linux-templates.html",
+                    "format": "vendor_document",
+                    "filename": null
+                  }
+                }
+              ],
+              "signatures": [],
+              "http": {
+                "last_modified": "Fri, 29 May 2026 09:17:19 GMT",
+                "etag": "\"da5566689fe781c6b6e7d6152f8b862b:1780573532.780261\""
+              }
+            }
+          }
+        ]
+      }
+    },
+    {
+      "distro": {
+        "id": "oracle",
+        "name": "Oracle Linux",
+        "os_family": "linux",
+        "homepage": "https://www.oracle.com/linux/",
+        "checked_at": "2026-10-24T08:28:12.184310711Z"
       },
       "release": {
         "id": "9",
@@ -1252,7 +1985,71 @@
         "name": "Oracle Linux",
         "os_family": "linux",
         "homepage": "https://www.oracle.com/linux/",
-        "checked_at": "2026-10-16T05:29:44.052704682Z"
+        "checked_at": "2026-10-24T08:28:12.184310711Z"
+      },
+      "release": {
+        "id": "9",
+        "version": "9.8-b293",
+        "title": "Oracle Linux 9.8",
+        "aliases": [],
+        "eol_date": null,
+        "osinfo": null
+      },
+      "build": {
+        "build": "9.8-b182",
+        "point_release": "9.8",
+        "published_at": null,
+        "first_seen": "2026-10-24T08:28:12.184310711Z",
+        "osinfo": null,
+        "artifacts": [
+          {
+            "variant": "kvm-cloud",
+            "default_variant": true,
+            "arch": "aarch64",
+            "format": "qcow2",
+            "compression": "none",
+            "firmware": [],
+            "datasources": [
+              "nocloud"
+            ],
+            "ssh_key_injection": true,
+            "size": 660668416,
+            "locations": [
+              {
+                "url": "https://yum.oracle.com/templates/OracleLinux/OL9/u8/aarch64/OL9U8_aarch64-kvm-cloud-b182.qcow2",
+                "kind": "primary",
+                "redirects_off_host": false
+              }
+            ],
+            "integrity": {
+              "digests": [
+                {
+                  "algorithm": "sha256",
+                  "value": "4793c3ec49d9f8b27a932d3bd88ec45d08249c5195faa3b0fac876ab0d5f5856",
+                  "source": {
+                    "url": "https://yum.oracle.com/oracle-linux-templates.html",
+                    "format": "vendor_document",
+                    "filename": null
+                  }
+                }
+              ],
+              "signatures": [],
+              "http": {
+                "last_modified": "Tue, 07 Jul 2026 21:16:40 GMT",
+                "etag": "\"36db504879fb50036c17f39d65f04aea:1783982667.03396\""
+              }
+            }
+          }
+        ]
+      }
+    },
+    {
+      "distro": {
+        "id": "oracle",
+        "name": "Oracle Linux",
+        "os_family": "linux",
+        "homepage": "https://www.oracle.com/linux/",
+        "checked_at": "2026-10-24T08:28:12.184310711Z"
       },
       "release": {
         "id": "8",
@@ -1312,11 +2109,75 @@
     },
     {
       "distro": {
+        "id": "oracle",
+        "name": "Oracle Linux",
+        "os_family": "linux",
+        "homepage": "https://www.oracle.com/linux/",
+        "checked_at": "2026-10-24T08:28:12.184310711Z"
+      },
+      "release": {
+        "id": "8",
+        "version": "8.10-b287",
+        "title": "Oracle Linux 8.10",
+        "aliases": [],
+        "eol_date": null,
+        "osinfo": null
+      },
+      "build": {
+        "build": "8.10-b170",
+        "point_release": "8.10",
+        "published_at": null,
+        "first_seen": "2026-10-24T08:28:12.184310711Z",
+        "osinfo": null,
+        "artifacts": [
+          {
+            "variant": "kvm-cloud",
+            "default_variant": true,
+            "arch": "aarch64",
+            "format": "qcow2",
+            "compression": "none",
+            "firmware": [],
+            "datasources": [
+              "nocloud"
+            ],
+            "ssh_key_injection": true,
+            "size": 505020416,
+            "locations": [
+              {
+                "url": "https://yum.oracle.com/templates/OracleLinux/OL8/u10/aarch64/OL8U10_aarch64-kvm-cloud-b170.qcow2",
+                "kind": "primary",
+                "redirects_off_host": false
+              }
+            ],
+            "integrity": {
+              "digests": [
+                {
+                  "algorithm": "sha256",
+                  "value": "729114abf775e4dcc811b3bb4b0d85647c0db0dc2e4c700f09f59e2aea806533",
+                  "source": {
+                    "url": "https://yum.oracle.com/oracle-linux-templates.html",
+                    "format": "vendor_document",
+                    "filename": null
+                  }
+                }
+              ],
+              "signatures": [],
+              "http": {
+                "last_modified": "Wed, 27 May 2026 18:27:12 GMT",
+                "etag": "\"d804e4e791863bb320a02e0115049bf9:1780574365.410281\""
+              }
+            }
+          }
+        ]
+      }
+    },
+    {
+      "distro": {
         "id": "opensuse",
         "name": "openSUSE Leap",
         "os_family": "linux",
         "homepage": "https://www.opensuse.org/",
-        "checked_at": "2026-10-16T05:29:31.828210604Z"
+        "checked_at": "2026-10-24T08:28:12.184310711Z"
       },
       "release": {
         "id": "16.1",
@@ -1372,6 +2233,44 @@
                 "etag": null
               }
             }
+          },
+          {
+            "variant": "minimal-vm-cloud",
+            "default_variant": true,
+            "arch": "aarch64",
+            "format": "qcow2",
+            "compression": "none",
+            "firmware": [],
+            "datasources": [
+              "nocloud"
+            ],
+            "ssh_key_injection": true,
+            "size": 323944448,
+            "locations": [
+              {
+                "url": "https://download.opensuse.org/distribution/leap/16.1/appliances/Leap-16.1-Minimal-VM.aarch64-Cloud-Build3.10.qcow2",
+                "kind": "primary",
+                "redirects_off_host": true
+              }
+            ],
+            "integrity": {
+              "digests": [
+                {
+                  "algorithm": "sha256",
+                  "value": "a5b653020be6cda59f0eb6a2d3ccd0f65668fae77bb666ab3bfff7f47cda679b",
+                  "source": {
+                    "url": "https://download.opensuse.org/distribution/leap/16.1/appliances/Leap-16.1-Minimal-VM.aarch64-Cloud-Build3.10.qcow2.sha256",
+                    "format": "gnu",
+                    "filename": "Leap-16.1-Minimal-VM.aarch64-Cloud-Build3.10.qcow2"
+                  }
+                }
+              ],
+              "signatures": [],
+              "http": {
+                "last_modified": null,
+                "etag": null
+              }
+            }
           }
         ]
       }
@@ -1382,7 +2281,7 @@
         "name": "openSUSE Leap",
         "os_family": "linux",
         "homepage": "https://www.opensuse.org/",
-        "checked_at": "2026-10-16T05:29:31.828210604Z"
+        "checked_at": "2026-10-24T08:28:12.184310711Z"
       },
       "release": {
         "id": "16.0",
@@ -1395,10 +2294,10 @@
         "osinfo": null
       },
       "build": {
-        "build": "16.0-Build18.81",
+        "build": "16.0-Build18.85",
         "point_release": null,
         "published_at": null,
-        "first_seen": "2026-10-16T05:29:31.828210604Z",
+        "first_seen": "2026-10-24T08:28:12.184310711Z",
         "osinfo": null,
         "artifacts": [
           {
@@ -1412,10 +2311,10 @@
               "nocloud"
             ],
             "ssh_key_injection": true,
-            "size": 338000896,
+            "size": 339871232,
             "locations": [
               {
-                "url": "https://download.opensuse.org/distribution/leap/16.0/appliances/Leap-16.0-Minimal-VM.x86_64-Cloud-Build18.81.qcow2",
+                "url": "https://download.opensuse.org/distribution/leap/16.0/appliances/Leap-16.0-Minimal-VM.x86_64-Cloud-Build18.85.qcow2",
                 "kind": "primary",
                 "redirects_off_host": true
               }
@@ -1424,11 +2323,49 @@
               "digests": [
                 {
                   "algorithm": "sha256",
-                  "value": "ed375c62192b801293b279aa3e8f3bfbb9a73cd3d0cced73dd1fe2e08932a31b",
+                  "value": "4a8cb7ba5457ebe875005cfd2ce7ebfd4ab4109c69b6ee6519f0a5e23ff5dd74",
                   "source": {
-                    "url": "https://download.opensuse.org/distribution/leap/16.0/appliances/Leap-16.0-Minimal-VM.x86_64-Cloud-Build18.81.qcow2.sha256",
+                    "url": "https://download.opensuse.org/distribution/leap/16.0/appliances/Leap-16.0-Minimal-VM.x86_64-Cloud-Build18.85.qcow2.sha256",
                     "format": "gnu",
-                    "filename": "Leap-16.0-Minimal-VM.x86_64-Cloud-Build18.81.qcow2"
+                    "filename": "Leap-16.0-Minimal-VM.x86_64-Cloud-Build18.85.qcow2"
+                  }
+                }
+              ],
+              "signatures": [],
+              "http": {
+                "last_modified": null,
+                "etag": null
+              }
+            }
+          },
+          {
+            "variant": "minimal-vm-cloud",
+            "default_variant": true,
+            "arch": "aarch64",
+            "format": "qcow2",
+            "compression": "none",
+            "firmware": [],
+            "datasources": [
+              "nocloud"
+            ],
+            "ssh_key_injection": true,
+            "size": 319029248,
+            "locations": [
+              {
+                "url": "https://download.opensuse.org/distribution/leap/16.0/appliances/Leap-16.0-Minimal-VM.aarch64-Cloud-Build18.85.qcow2",
+                "kind": "primary",
+                "redirects_off_host": true
+              }
+            ],
+            "integrity": {
+              "digests": [
+                {
+                  "algorithm": "sha256",
+                  "value": "38f2fdf9681081a95c8e8fabd12509e57c780f2d4f1e67fcbcc832292d8bf878",
+                  "source": {
+                    "url": "https://download.opensuse.org/distribution/leap/16.0/appliances/Leap-16.0-Minimal-VM.aarch64-Cloud-Build18.85.qcow2.sha256",
+                    "format": "gnu",
+                    "filename": "Leap-16.0-Minimal-VM.aarch64-Cloud-Build18.85.qcow2"
                   }
                 }
               ],
@@ -1448,11 +2385,11 @@
         "name": "Alpine Linux",
         "os_family": "linux",
         "homepage": "https://alpinelinux.org/",
-        "checked_at": "2026-10-16T05:29:41.163425911Z"
+        "checked_at": "2026-10-24T08:28:12.184310711Z"
       },
       "release": {
         "id": "3.24",
-        "version": "3.24.2",
+        "version": "3.24.3",
         "title": "Alpine Linux v3.24",
         "aliases": [
           "latest"
@@ -1461,10 +2398,10 @@
         "osinfo": null
       },
       "build": {
-        "build": "3.24.2",
-        "point_release": "3.24.2",
+        "build": "3.24.3",
+        "point_release": "3.24.3",
         "published_at": null,
-        "first_seen": "2026-10-06T20:41:51.428123068Z",
+        "first_seen": "2026-10-24T08:28:12.184310711Z",
         "osinfo": null,
         "artifacts": [
           {
@@ -1478,10 +2415,10 @@
               "nocloud"
             ],
             "ssh_key_injection": true,
-            "size": 157220864,
+            "size": 157810688,
             "locations": [
               {
-                "url": "https://dl-cdn.alpinelinux.org/alpine/v3.24/releases/cloud/alpine-3.24.2-x86_64-cloudinit-r2.qcow2",
+                "url": "https://dl-cdn.alpinelinux.org/alpine/v3.24/releases/cloud/alpine-3.24.3-x86_64-cloudinit-r0.qcow2",
                 "kind": "primary",
                 "redirects_off_host": false
               }
@@ -1490,9 +2427,9 @@
               "digests": [
                 {
                   "algorithm": "sha512",
-                  "value": "6b9928cea1c6243affb8a9b09eba6046cd090e8bdb7141fbf0c8f2649c4a99d62e12cda289da41f99de82ce2b3e3780772dd594eaee3693cb49691d81cbe5d4b",
+                  "value": "cf1b95fb4b77d32a9e5c3d02290e203f24907550192fe21819e1abaa28541dab3fe025aa2afa1b952773e3d8e6ea5593bc2e6bfcf398bff886fe5c6f2785f308",
                   "source": {
-                    "url": "https://dl-cdn.alpinelinux.org/alpine/v3.24/releases/cloud/alpine-3.24.2-x86_64-cloudinit-r2.qcow2.sha512",
+                    "url": "https://dl-cdn.alpinelinux.org/alpine/v3.24/releases/cloud/alpine-3.24.3-x86_64-cloudinit-r0.qcow2.sha512",
                     "format": "bare",
                     "filename": null
                   }
@@ -1500,15 +2437,60 @@
               ],
               "signatures": [
                 {
-                  "url": "https://dl-cdn.alpinelinux.org/alpine/v3.24/releases/cloud/alpine-3.24.2-x86_64-cloudinit-r2.qcow2.asc",
+                  "url": "https://dl-cdn.alpinelinux.org/alpine/v3.24/releases/cloud/alpine-3.24.3-x86_64-cloudinit-r0.qcow2.asc",
                   "kind": "pgp_detached",
-                  "signs": "https://dl-cdn.alpinelinux.org/alpine/v3.24/releases/cloud/alpine-3.24.2-x86_64-cloudinit-r2.qcow2",
+                  "signs": "https://dl-cdn.alpinelinux.org/alpine/v3.24/releases/cloud/alpine-3.24.3-x86_64-cloudinit-r0.qcow2",
                   "key_url": null
                 }
               ],
               "http": {
-                "last_modified": "Tue, 29 Sep 2026 23:56:26 GMT",
-                "etag": "\"6abc502a-95f0000\""
+                "last_modified": "Thu, 22 Oct 2026 03:23:59 GMT",
+                "etag": "\"6ad981cf-9680000\""
+              }
+            }
+          },
+          {
+            "variant": "cloudinit",
+            "default_variant": true,
+            "arch": "aarch64",
+            "format": "qcow2",
+            "compression": "none",
+            "firmware": [],
+            "datasources": [
+              "nocloud"
+            ],
+            "ssh_key_injection": true,
+            "size": 191823872,
+            "locations": [
+              {
+                "url": "https://dl-cdn.alpinelinux.org/alpine/v3.24/releases/cloud/alpine-3.24.3-aarch64-cloudinit-r0.qcow2",
+                "kind": "primary",
+                "redirects_off_host": false
+              }
+            ],
+            "integrity": {
+              "digests": [
+                {
+                  "algorithm": "sha512",
+                  "value": "9eb2a1639df38123af47915938a4ebd2943ae543ac535c69e790e441ee11a74257ae80ad6ff10be22fdfacdf9e2b5510e0e2e6a65beaa7329d1f506ac213bebc",
+                  "source": {
+                    "url": "https://dl-cdn.alpinelinux.org/alpine/v3.24/releases/cloud/alpine-3.24.3-aarch64-cloudinit-r0.qcow2.sha512",
+                    "format": "bare",
+                    "filename": null
+                  }
+                }
+              ],
+              "signatures": [
+                {
+                  "url": "https://dl-cdn.alpinelinux.org/alpine/v3.24/releases/cloud/alpine-3.24.3-aarch64-cloudinit-r0.qcow2.asc",
+                  "kind": "pgp_detached",
+                  "signs": "https://dl-cdn.alpinelinux.org/alpine/v3.24/releases/cloud/alpine-3.24.3-aarch64-cloudinit-r0.qcow2",
+                  "key_url": null
+                }
+              ],
+              "http": {
+                "last_modified": "Thu, 22 Oct 2026 02:57:43 GMT",
+                "etag": "\"6ad97ba7-b6f0000\""
               }
             }
           }
@@ -1521,11 +2503,11 @@
         "name": "Alpine Linux",
         "os_family": "linux",
         "homepage": "https://alpinelinux.org/",
-        "checked_at": "2026-10-16T05:29:41.163425911Z"
+        "checked_at": "2026-10-24T08:28:12.184310711Z"
       },
       "release": {
         "id": "3.23",
-        "version": "3.23.6",
+        "version": "3.23.7",
         "title": "Alpine Linux v3.23",
         "aliases": [],
         "eol_date": "2027-11-01",
@@ -1582,6 +2564,51 @@
                 "etag": "\"69e2d144-bf60000\""
               }
             }
+          },
+          {
+            "variant": "cloudinit",
+            "default_variant": true,
+            "arch": "aarch64",
+            "format": "qcow2",
+            "compression": "none",
+            "firmware": [],
+            "datasources": [
+              "nocloud"
+            ],
+            "ssh_key_injection": true,
+            "size": 235077632,
+            "locations": [
+              {
+                "url": "https://dl-cdn.alpinelinux.org/alpine/v3.23/releases/cloud/nocloud_alpine-3.23.4-aarch64-uefi-cloudinit-r0.qcow2",
+                "kind": "primary",
+                "redirects_off_host": false
+              }
+            ],
+            "integrity": {
+              "digests": [
+                {
+                  "algorithm": "sha512",
+                  "value": "737b0eb365944ffcf6da477c059c105bbde222942fd5a8380c07db088365b18dbc60a0f2824ea9a3904d57e194e0d05a7074302c3ebc104d0aecb6ddc6ffd91c",
+                  "source": {
+                    "url": "https://dl-cdn.alpinelinux.org/alpine/v3.23/releases/cloud/nocloud_alpine-3.23.4-aarch64-uefi-cloudinit-r0.qcow2.sha512",
+                    "format": "bare",
+                    "filename": null
+                  }
+                }
+              ],
+              "signatures": [
+                {
+                  "url": "https://dl-cdn.alpinelinux.org/alpine/v3.23/releases/cloud/nocloud_alpine-3.23.4-aarch64-uefi-cloudinit-r0.qcow2.asc",
+                  "kind": "pgp_detached",
+                  "signs": "https://dl-cdn.alpinelinux.org/alpine/v3.23/releases/cloud/nocloud_alpine-3.23.4-aarch64-uefi-cloudinit-r0.qcow2",
+                  "key_url": null
+                }
+              ],
+              "http": {
+                "last_modified": "Fri, 17 Apr 2026 23:34:25 GMT",
+                "etag": "\"69e2c381-e030000\""
+              }
+            }
           }
         ]
       }
@@ -1592,11 +2619,11 @@
         "name": "Alpine Linux",
         "os_family": "linux",
         "homepage": "https://alpinelinux.org/",
-        "checked_at": "2026-10-16T05:29:41.163425911Z"
+        "checked_at": "2026-10-24T08:28:12.184310711Z"
       },
       "release": {
         "id": "3.22",
-        "version": "3.22.6",
+        "version": "3.22.7",
         "title": "Alpine Linux v3.22",
         "aliases": [],
         "eol_date": "2027-05-01",
@@ -1653,6 +2680,51 @@
                 "etag": "\"69e2bc82-bcb0000\""
               }
             }
+          },
+          {
+            "variant": "cloudinit",
+            "default_variant": true,
+            "arch": "aarch64",
+            "format": "qcow2",
+            "compression": "none",
+            "firmware": [],
+            "datasources": [
+              "nocloud"
+            ],
+            "ssh_key_injection": true,
+            "size": 226557952,
+            "locations": [
+              {
+                "url": "https://dl-cdn.alpinelinux.org/alpine/v3.22/releases/cloud/nocloud_alpine-3.22.4-aarch64-uefi-cloudinit-r0.qcow2",
+                "kind": "primary",
+                "redirects_off_host": false
+              }
+            ],
+            "integrity": {
+              "digests": [
+                {
+                  "algorithm": "sha512",
+                  "value": "a53620902f99b1fd4591125d348e4385f036d590607f4fa90d6f85fea0248007ec763cc81d025f347ede5bd746b3726cf5eddd461b6c94c35376f71cb7558317",
+                  "source": {
+                    "url": "https://dl-cdn.alpinelinux.org/alpine/v3.22/releases/cloud/nocloud_alpine-3.22.4-aarch64-uefi-cloudinit-r0.qcow2.sha512",
+                    "format": "bare",
+                    "filename": null
+                  }
+                }
+              ],
+              "signatures": [
+                {
+                  "url": "https://dl-cdn.alpinelinux.org/alpine/v3.22/releases/cloud/nocloud_alpine-3.22.4-aarch64-uefi-cloudinit-r0.qcow2.asc",
+                  "kind": "pgp_detached",
+                  "signs": "https://dl-cdn.alpinelinux.org/alpine/v3.22/releases/cloud/nocloud_alpine-3.22.4-aarch64-uefi-cloudinit-r0.qcow2",
+                  "key_url": null
+                }
+              ],
+              "http": {
+                "last_modified": "Fri, 17 Apr 2026 22:09:30 GMT",
+                "etag": "\"69e2af9a-d810000\""
+              }
+            }
           }
         ]
       }
@@ -1663,11 +2735,11 @@
         "name": "Alpine Linux",
         "os_family": "linux",
         "homepage": "https://alpinelinux.org/",
-        "checked_at": "2026-10-16T05:29:41.163425911Z"
+        "checked_at": "2026-10-24T08:28:12.184310711Z"
       },
       "release": {
         "id": "3.21",
-        "version": "3.21.8",
+        "version": "3.21.9",
         "title": "Alpine Linux v3.21",
         "aliases": [],
         "eol_date": "2026-11-01",
@@ -1724,6 +2796,51 @@
                 "etag": "\"69e2a8bc-bb30000\""
               }
             }
+          },
+          {
+            "variant": "cloudinit",
+            "default_variant": true,
+            "arch": "aarch64",
+            "format": "qcow2",
+            "compression": "none",
+            "firmware": [],
+            "datasources": [
+              "nocloud"
+            ],
+            "ssh_key_injection": true,
+            "size": 225050624,
+            "locations": [
+              {
+                "url": "https://dl-cdn.alpinelinux.org/alpine/v3.21/releases/cloud/nocloud_alpine-3.21.7-aarch64-uefi-cloudinit-r0.qcow2",
+                "kind": "primary",
+                "redirects_off_host": false
+              }
+            ],
+            "integrity": {
+              "digests": [
+                {
+                  "algorithm": "sha512",
+                  "value": "9837b968763c2f620aa81cab3dc26b7f914ffa935245c9e929e339559f0f2fecdfd281e5cf82457ecfd6a9b6726a8a8ec40fb35d99dd8fd9b27d3b76c304dac7",
+                  "source": {
+                    "url": "https://dl-cdn.alpinelinux.org/alpine/v3.21/releases/cloud/nocloud_alpine-3.21.7-aarch64-uefi-cloudinit-r0.qcow2.sha512",
+                    "format": "bare",
+                    "filename": null
+                  }
+                }
+              ],
+              "signatures": [
+                {
+                  "url": "https://dl-cdn.alpinelinux.org/alpine/v3.21/releases/cloud/nocloud_alpine-3.21.7-aarch64-uefi-cloudinit-r0.qcow2.asc",
+                  "kind": "pgp_detached",
+                  "signs": "https://dl-cdn.alpinelinux.org/alpine/v3.21/releases/cloud/nocloud_alpine-3.21.7-aarch64-uefi-cloudinit-r0.qcow2",
+                  "key_url": null
+                }
+              ],
+              "http": {
+                "last_modified": "Fri, 17 Apr 2026 20:30:08 GMT",
+                "etag": "\"69e29850-d6a0000\""
+              }
+            }
           }
         ]
       }
@@ -1734,7 +2851,7 @@
         "name": "Arch Linux",
         "os_family": "linux",
         "homepage": "https://archlinux.org/",
-        "checked_at": "2026-10-16T05:29:53.777358496Z"
+        "checked_at": "2026-10-24T08:28:12.184310711Z"
       },
       "release": {
         "id": "rolling",
@@ -1800,7 +2917,7 @@
         "name": "FreeBSD",
         "os_family": "bsd",
         "homepage": "https://www.freebsd.org/",
-        "checked_at": "2026-10-16T05:29:30.843682359Z"
+        "checked_at": "2026-10-24T08:28:12.184310711Z"
       },
       "release": {
         "id": "15.1",
@@ -1856,6 +2973,44 @@
                 "etag": "\"6a2befef-27d5cdd8\""
               }
             }
+          },
+          {
+            "variant": "basic-cloudinit-zfs",
+            "default_variant": true,
+            "arch": "aarch64",
+            "format": "raw",
+            "compression": "xz",
+            "firmware": [],
+            "datasources": [
+              "nocloud"
+            ],
+            "ssh_key_injection": true,
+            "size": 597828460,
+            "locations": [
+              {
+                "url": "https://download.freebsd.org/releases/VM-IMAGES/15.1-RELEASE/aarch64/Latest/FreeBSD-15.1-RELEASE-arm64-aarch64-BASIC-CLOUDINIT-zfs.raw.xz",
+                "kind": "primary",
+                "redirects_off_host": false
+              }
+            ],
+            "integrity": {
+              "digests": [
+                {
+                  "algorithm": "sha256",
+                  "value": "907ca57e12503124cc48da5d698da139459c60afa023aa12e82729d655e8e15b",
+                  "source": {
+                    "url": "https://download.freebsd.org/releases/VM-IMAGES/15.1-RELEASE/aarch64/Latest/CHECKSUM.SHA256",
+                    "format": "bsd",
+                    "filename": "FreeBSD-15.1-RELEASE-arm64-aarch64-BASIC-CLOUDINIT-zfs.raw.xz"
+                  }
+                }
+              ],
+              "signatures": [],
+              "http": {
+                "last_modified": "Fri, 12 Jun 2026 11:31:06 GMT",
+                "etag": "\"6a2bedfa-23a2236c\""
+              }
+            }
           }
         ]
       }
@@ -1866,7 +3021,7 @@
         "name": "FreeBSD",
         "os_family": "bsd",
         "homepage": "https://www.freebsd.org/",
-        "checked_at": "2026-10-16T05:29:30.843682359Z"
+        "checked_at": "2026-10-24T08:28:12.184310711Z"
       },
       "release": {
         "id": "14.5",
@@ -1920,6 +3075,44 @@
                 "etag": "\"6a9ab213-2725a198\""
               }
             }
+          },
+          {
+            "variant": "basic-cloudinit-zfs",
+            "default_variant": true,
+            "arch": "aarch64",
+            "format": "raw",
+            "compression": "xz",
+            "firmware": [],
+            "datasources": [
+              "nocloud"
+            ],
+            "ssh_key_injection": true,
+            "size": 588694840,
+            "locations": [
+              {
+                "url": "https://download.freebsd.org/releases/VM-IMAGES/14.5-RELEASE/aarch64/Latest/FreeBSD-14.5-RELEASE-arm64-aarch64-BASIC-CLOUDINIT-zfs.raw.xz",
+                "kind": "primary",
+                "redirects_off_host": false
+              }
+            ],
+            "integrity": {
+              "digests": [
+                {
+                  "algorithm": "sha256",
+                  "value": "a8b5f945575c916d70ed6c0dee07977ef42e10dc641b006dbe46252a469600ed",
+                  "source": {
+                    "url": "https://download.freebsd.org/releases/VM-IMAGES/14.5-RELEASE/aarch64/Latest/CHECKSUM.SHA256",
+                    "format": "bsd",
+                    "filename": "FreeBSD-14.5-RELEASE-arm64-aarch64-BASIC-CLOUDINIT-zfs.raw.xz"
+                  }
+                }
+              ],
+              "signatures": [],
+              "http": {
+                "last_modified": "Fri, 04 Sep 2026 13:02:16 GMT",
+                "etag": "\"6a9ac158-2316c538\""
+              }
+            }
           }
         ]
       }
@@ -1930,7 +3123,7 @@
         "name": "FreeBSD",
         "os_family": "bsd",
         "homepage": "https://www.freebsd.org/",
-        "checked_at": "2026-10-16T05:29:30.843682359Z"
+        "checked_at": "2026-10-24T08:28:12.184310711Z"
       },
       "release": {
         "id": "14.4",
@@ -1984,6 +3177,44 @@
                 "etag": "\"69aacadc-2782ac90\""
               }
             }
+          },
+          {
+            "variant": "basic-cloudinit-zfs",
+            "default_variant": true,
+            "arch": "aarch64",
+            "format": "raw",
+            "compression": "xz",
+            "firmware": [],
+            "datasources": [
+              "nocloud"
+            ],
+            "ssh_key_injection": true,
+            "size": 596507412,
+            "locations": [
+              {
+                "url": "https://download.freebsd.org/releases/VM-IMAGES/14.4-RELEASE/aarch64/Latest/FreeBSD-14.4-RELEASE-arm64-aarch64-BASIC-CLOUDINIT-zfs.raw.xz",
+                "kind": "primary",
+                "redirects_off_host": false
+              }
+            ],
+            "integrity": {
+              "digests": [
+                {
+                  "algorithm": "sha256",
+                  "value": "9b4de54cf54d825630a7418919e44e9a5a6f51d758b377b6df41cf3974d1b615",
+                  "source": {
+                    "url": "https://download.freebsd.org/releases/VM-IMAGES/14.4-RELEASE/aarch64/Latest/CHECKSUM.SHA256",
+                    "format": "bsd",
+                    "filename": "FreeBSD-14.4-RELEASE-arm64-aarch64-BASIC-CLOUDINIT-zfs.raw.xz"
+                  }
+                }
+              ],
+              "signatures": [],
+              "http": {
+                "last_modified": "Fri, 06 Mar 2026 13:13:26 GMT",
+                "etag": "\"69aad2f6-238dfb14\""
+              }
+            }
           }
         ]
       }
@@ -1994,7 +3225,7 @@
         "name": "OpenBSD (community build)",
         "os_family": "bsd",
         "homepage": "https://bsd-cloud-image.org/",
-        "checked_at": "2026-10-16T05:29:42.476525720Z"
+        "checked_at": "2026-10-24T08:28:12.184310711Z"
       },
       "release": {
         "id": "7.9",
@@ -2060,7 +3291,7 @@
         "name": "OmniOS",
         "os_family": "illumos",
         "homepage": "https://omnios.org/",
-        "checked_at": "2026-10-16T05:29:52.126855642Z"
+        "checked_at": "2026-10-24T08:28:12.184310711Z"
       },
       "release": {
         "id": "r151058",
@@ -2126,7 +3357,7 @@
         "name": "OmniOS",
         "os_family": "illumos",
         "homepage": "https://omnios.org/",
-        "checked_at": "2026-10-16T05:29:52.126855642Z"
+        "checked_at": "2026-10-24T08:28:12.184310711Z"
       },
       "release": {
         "id": "r151054r",
@@ -2192,7 +3423,7 @@
         "name": "OmniOS",
         "os_family": "illumos",
         "homepage": "https://omnios.org/",
-        "checked_at": "2026-10-16T05:29:52.126855642Z"
+        "checked_at": "2026-10-24T08:28:12.184310711Z"
       },
       "release": {
         "id": "20261007",
@@ -2258,7 +3489,7 @@
         "name": "SmartOS",
         "os_family": "illumos",
         "homepage": "https://smartos.org/",
-        "checked_at": "2026-10-16T05:29:31.077003469Z"
+        "checked_at": "2026-10-24T08:28:12.184310711Z"
       },
       "release": {
         "id": "rolling",
@@ -2271,10 +3502,10 @@
         "osinfo": null
       },
       "build": {
-        "build": "20261009T131447Z",
+        "build": "20261023T001807Z",
         "point_release": null,
         "published_at": null,
-        "first_seen": "2026-10-09T19:39:48.115067946Z",
+        "first_seen": "2026-10-24T08:28:12.184310711Z",
         "osinfo": null,
         "artifacts": [
           {
@@ -2286,10 +3517,10 @@
             "firmware": [],
             "datasources": [],
             "ssh_key_injection": false,
-            "size": 224178098,
+            "size": 224453624,
             "locations": [
               {
-                "url": "https://us-central.manta.mnx.io/Joyent_Dev/public/SmartOS/20261009T131447Z/smartos-20261009T131447Z-USB.img.gz",
+                "url": "https://us-central.manta.mnx.io/Joyent_Dev/public/SmartOS/20261023T001807Z/smartos-20261023T001807Z-USB.img.gz",
                 "kind": "primary",
                 "redirects_off_host": false
               }
@@ -2298,18 +3529,18 @@
               "digests": [
                 {
                   "algorithm": "sha256",
-                  "value": "4b94ae50e449f1651abf8561265a905a902a665450e0055bfa60592394ea1616",
+                  "value": "eb05340c7162002082915f404198a9818b0c86cf9ea67a45bfdb8921cdf80ed6",
                   "source": {
-                    "url": "https://us-central.manta.mnx.io/Joyent_Dev/public/SmartOS/20261009T131447Z/sha256sums.txt",
+                    "url": "https://us-central.manta.mnx.io/Joyent_Dev/public/SmartOS/20261023T001807Z/sha256sums.txt",
                     "format": "gnu",
-                    "filename": "smartos-20261009T131447Z-USB.img.gz"
+                    "filename": "smartos-20261023T001807Z-USB.img.gz"
                   }
                 }
               ],
               "signatures": [],
               "http": {
-                "last_modified": "Fri, 09 Oct 2026 16:16:44 GMT",
-                "etag": "a56deff3-bcbf-4f8f-9e3f-1f4f6d40e3fe"
+                "last_modified": "Fri, 23 Oct 2026 03:25:56 GMT",
+                "etag": "c9c8c6d9-1624-41e8-8a41-bf1d04b530c8"
               }
             }
           }
