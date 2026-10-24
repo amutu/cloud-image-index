@@ -47,40 +47,14 @@ impl Resolved {
     }
 }
 
-pub async fn resolve(http: &reqwest::Client, release: &str) -> Result<Resolved> {
-    let body = fetch_templates_html(http).await?;
-    let rows = parse_rows(&body);
-    if rows.is_empty() {
-        anyhow::bail!("no Oracle Linux x86_64 kvm rows found at {TEMPLATES_URL}");
-    }
-
-    let token = release.trim();
-    let target = if token.eq_ignore_ascii_case("latest") {
-        rows.iter()
-            .max_by_key(|r| r.major.parse::<u32>().unwrap_or(0))
-            .cloned()
-            .ok_or_else(|| anyhow::anyhow!("no comparable Oracle majors at {TEMPLATES_URL}"))?
-    } else {
-        let major = parse_major(token)?;
-        rows.iter()
-            .find(|r| r.major == major)
-            .cloned()
-            .ok_or_else(|| {
-                let available: Vec<&str> = rows.iter().map(|r| r.major.as_str()).collect();
-                anyhow::anyhow!(
-                    "oracle: major {major} not on the templates page (have: {})",
-                    available.join(", ")
-                )
-            })?
-    };
-    Ok(target)
-}
-
 /// List every Oracle Linux x86_64 major on the templates page,
 /// newest-first. Same page the resolver scrapes; one row per major.
 pub async fn list(http: &reqwest::Client) -> Result<Vec<Resolved>> {
     let body = fetch_templates_html(http).await?;
-    Ok(newest_first(parse_rows(&body)))
+    Ok(newest_first(parse_rows_arch(
+        &body,
+        crate::vendor::Architecture::X86_64,
+    )?))
 }
 
 /// Rows ordered by major version, newest first.
@@ -111,17 +85,24 @@ async fn fetch_templates_html(http: &reqwest::Client) -> Result<String> {
 /// keeping the highest update/build seen for that major. The page
 /// occasionally lists EOL releases (e.g. OL7) — they're returned
 /// here too; the caller decides whether to surface them.
+#[cfg(test)]
 fn parse_rows(html: &str) -> Vec<Resolved> {
-    let kvm_link = match Regex::new(
-        r#"<a[^>]*class="kvm-image"[^>]*href="([^"]+/OL(\d+)/u(\d+)/x86_64/OL\d+U\d+_x86_64-kvm-b(\d+)\.qcow2)""#,
-    ) {
-        Ok(r) => r,
-        Err(_) => return Vec::new(),
+    parse_rows_arch(html, crate::vendor::Architecture::X86_64)
+        .unwrap_or_else(|e| panic!("invalid Oracle image rows: {e}"))
+}
+
+pub fn parse_rows_arch(html: &str, arch: crate::vendor::Architecture) -> Result<Vec<Resolved>> {
+    let variant = match arch {
+        crate::vendor::Architecture::X86_64 => "kvm",
+        crate::vendor::Architecture::Aarch64 => "kvm-cloud",
     };
-    let kvm_hash = match Regex::new(r#"<tt[^>]*class="kvm-sha256"[^>]*>([0-9a-fA-F]{64})</tt>"#) {
-        Ok(r) => r,
-        Err(_) => return Vec::new(),
-    };
+    let machine = arch.as_str();
+    let kvm_link = Regex::new(&format!(
+        r#"<a[^>]*class="{variant}-image"[^>]*href="([^"]+/OL(\d+)/u(\d+)/{machine}/OL\d+U\d+_{machine}-{variant}-b(\d+)\.qcow2)""#
+    ))?;
+    let kvm_hash = Regex::new(&format!(
+        r#"<tt[^>]*class="{variant}-sha256"[^>]*>([0-9a-fA-F]{{64}})</tt>"#
+    ))?;
 
     let mut by_major: std::collections::BTreeMap<String, Resolved> =
         std::collections::BTreeMap::new();
@@ -129,9 +110,12 @@ fn parse_rows(html: &str) -> Vec<Resolved> {
         let Some(link) = kvm_link.captures(chunk) else {
             continue;
         };
-        let Some(hash) = kvm_hash.captures(chunk) else {
-            continue;
-        };
+        let hash = kvm_hash.captures(chunk).ok_or_else(|| {
+            anyhow::anyhow!("oracle: {variant} image checksum missing or malformed")
+        })?;
+        for i in [2, 3, 4] {
+            link[i].parse::<u32>().context("Oracle 版本或 build 数值")?;
+        }
         let url = link
             .get(1)
             .map(|m| m.as_str())
@@ -181,7 +165,32 @@ fn parse_rows(html: &str) -> Vec<Resolved> {
             }
         }
     }
-    by_major.into_values().collect()
+    Ok(by_major.into_values().collect())
+}
+
+pub async fn resolve_arch(
+    http: &reqwest::Client,
+    release: &str,
+    arch: crate::vendor::Architecture,
+) -> Result<Option<Resolved>> {
+    select_release_arch(&fetch_templates_html(http).await?, release, arch)
+}
+
+pub fn select_release_arch(
+    html: &str,
+    release: &str,
+    arch: crate::vendor::Architecture,
+) -> Result<Option<Resolved>> {
+    let major = if release.trim().eq_ignore_ascii_case("latest") {
+        None
+    } else {
+        Some(parse_major(release)?)
+    };
+    let rows = parse_rows_arch(html, arch)?;
+    Ok(rows
+        .into_iter()
+        .filter(|r| major.as_ref().is_none_or(|m| m == &r.major))
+        .max_by_key(|r| r.major.parse::<u32>().unwrap_or(0)))
 }
 
 fn compare_update_build(a: &Resolved, b: &Resolved) -> i32 {
@@ -212,6 +221,57 @@ fn parse_major(input: &str) -> Result<String> {
 #[allow(clippy::unwrap_used)]
 mod tests {
     use super::*;
+
+    const DUAL_ARCH: &str = r#"
+<tr><a class="kvm-image" href="https://yum.oracle.com/templates/OracleLinux/OL9/u8/x86_64/OL9U8_x86_64-kvm-b293.qcow2">x</a><tt class="kvm-sha256">b12103391327abee8090686759c0d62dac9a7af2bf0f45fdf6b0d085a0fbb52b</tt></tr>
+<tr><a class="kvm-cloud-image" href="https://yum.oracle.com/templates/OracleLinux/OL9/u8/aarch64/OL9U8_aarch64-kvm-cloud-b182.qcow2">x</a><a class="kvm-image" href="https://yum.oracle.com/templates/OracleLinux/OL9/u8/aarch64/OL9U8_aarch64-kvm-b181.qcow2">x</a><tt class="kvm-sha256">1ec3376d74f7f3a08b60ee54a869667ea93249847ab576fc03f05310c605ceb2</tt><tt class="kvm-cloud-sha256">4793c3ec49d9f8b27a932d3bd88ec45d08249c5195faa3b0fac876ab0d5f5856</tt></tr>
+"#;
+
+    #[test]
+    fn arm_fixture_pairs_cloud_variant_with_its_own_checksum() {
+        use crate::vendor::Architecture;
+        let arm = parse_rows_arch(DUAL_ARCH, Architecture::Aarch64).unwrap();
+        assert_eq!(arm.len(), 1);
+        assert_eq!(arm[0].version(), "9.8-b182");
+        assert!(arm[0].url.ends_with("OL9U8_aarch64-kvm-cloud-b182.qcow2"));
+        assert_eq!(
+            arm[0].sha256,
+            "4793c3ec49d9f8b27a932d3bd88ec45d08249c5195faa3b0fac876ab0d5f5856"
+        );
+        let x86 = parse_rows_arch(DUAL_ARCH, Architecture::X86_64).unwrap();
+        assert_eq!(x86[0].version(), "9.8-b293");
+        assert_eq!(
+            x86[0].sha256,
+            "b12103391327abee8090686759c0d62dac9a7af2bf0f45fdf6b0d085a0fbb52b"
+        );
+        assert!(
+            select_release_arch(DUAL_ARCH, "7", Architecture::Aarch64)
+                .unwrap()
+                .is_none()
+        );
+        assert!(select_release_arch(DUAL_ARCH, "invalid", Architecture::Aarch64).is_err());
+        let malformed = DUAL_ARCH.replace("kvm-cloud-sha256", "wrong-sha256");
+        assert!(parse_rows_arch(&malformed, Architecture::Aarch64).is_err());
+        assert!(
+            parse_rows_arch("<html></html>", Architecture::Aarch64)
+                .unwrap()
+                .is_empty()
+        );
+    }
+
+    #[test]
+    fn arm_fixture_compares_rebuilds_numerically() {
+        use crate::vendor::Architecture;
+        let html = format!(
+            "{}{}",
+            DUAL_ARCH.replace("cloud-b182", "cloud-b99"),
+            DUAL_ARCH
+        );
+        let arm = select_release_arch(&html, "latest", Architecture::Aarch64)
+            .unwrap()
+            .unwrap();
+        assert_eq!(arm.version(), "9.8-b182");
+    }
 
     #[test]
     fn parse_rows_pairs_kvm_link_with_sha256() {
@@ -273,7 +333,7 @@ mod tests {
 <td><a class="kvm-image" href="https://example/OL9/u7/x86_64/OL9U7_x86_64-kvm-b2.qcow2">…</a></td>
 </tr>
 "#;
-        assert!(parse_rows(html).is_empty());
+        assert!(parse_rows_arch(html, crate::vendor::Architecture::X86_64).is_err());
     }
 
     #[test]

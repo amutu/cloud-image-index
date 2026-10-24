@@ -254,7 +254,7 @@ mod tests {
                 let reply = if found {
                     let body = r#"{"tag_name": "v0.9.1"}"#;
                     format!(
-                        "HTTP/1.1 200 OK\r\ncontent-length: {}\r\n\r\n{body}",
+                        "HTTP/1.1 200 OK\r\ncontent-length: {}\r\nconnection: close\r\n\r\n{body}",
                         body.len()
                     )
                 } else {

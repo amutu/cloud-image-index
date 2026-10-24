@@ -161,12 +161,28 @@ pub struct CloudImage {
 ///
 /// `-metal`, `-tiny`, `bios` and cloud-specific (`generic_`, `aws_`,
 /// ...) images are not picked.
+#[cfg(test)]
 pub fn pick_cloud_image(listing: &str, want_version: Option<&str>) -> Option<CloudImage> {
-    let re = regex::Regex::new(
-        r#"href="((?:nocloud_)?alpine-(\d+)\.(\d+)\.(\d+)-x86_64-(uefi-)?cloudinit-r(\d+)\.qcow2)""#,
-    )
-    .ok()?;
-    re.captures_iter(listing)
+    pick_cloud_image_arch(listing, want_version, crate::vendor::Architecture::X86_64)
+        .unwrap_or_else(|e| panic!("invalid Alpine image listing: {e}"))
+}
+
+pub fn pick_cloud_image_arch(
+    listing: &str,
+    want_version: Option<&str>,
+    arch: crate::vendor::Architecture,
+) -> Result<Option<CloudImage>> {
+    let re = regex::Regex::new(&format!(
+        r#"href="((?:nocloud_)?alpine-(\d+)\.(\d+)\.(\d+)-{}-(uefi-)?cloudinit-r(\d+)\.qcow2)""#,
+        arch.as_str()
+    ))?;
+    for c in re.captures_iter(listing) {
+        for i in [2, 3, 4, 6] {
+            c[i].parse::<u32>().context("Alpine 版本或 rebuild 数值")?;
+        }
+    }
+    Ok(re
+        .captures_iter(listing)
         .filter_map(|c| {
             let filename = c.get(1)?.as_str();
             let nocloud_prefix = filename.starts_with("nocloud_");
@@ -182,7 +198,7 @@ pub fn pick_cloud_image(listing: &str, want_version: Option<&str>) -> Option<Clo
         })
         .filter(|(_, version, _)| want_version.is_none_or(|w| w == version))
         .max_by_key(|(key, _, _)| *key)
-        .map(|(_, version, filename)| CloudImage { filename, version })
+        .map(|(_, version, filename)| CloudImage { filename, version }))
 }
 
 /// Catalog each release branch as a [`VersionEntry`], newest first
@@ -228,6 +244,44 @@ pub fn catalog(rj: &ReleasesJson, today: chrono::NaiveDate) -> Vec<VersionEntry>
 #[allow(clippy::unwrap_used)]
 mod tests {
     use super::*;
+
+    #[test]
+    fn arm_fixture_selects_rebuild_and_preserves_nocloud_filters() {
+        use crate::vendor::Architecture;
+        let listing = r#"
+<a href="nocloud_alpine-3.23.4-aarch64-uefi-cloudinit-r2.qcow2">x</a>
+<a href="nocloud_alpine-3.23.4-aarch64-uefi-cloudinit-r10.qcow2">x</a>
+<a href="nocloud_alpine-3.23.4-aarch64-bios-cloudinit-r99.qcow2">x</a>
+<a href="generic_alpine-3.23.4-aarch64-uefi-cloudinit-r99.qcow2">x</a>
+<a href="nocloud_alpine-3.23.4-aarch64-uefi-cloudinit-metal-r99.qcow2">x</a>
+<a href="nocloud_alpine-3.23.4-x86_64-uefi-cloudinit-r11.qcow2">x</a>
+"#;
+        let arm = pick_cloud_image_arch(listing, None, Architecture::Aarch64)
+            .unwrap()
+            .unwrap();
+        assert_eq!(
+            arm.filename,
+            "nocloud_alpine-3.23.4-aarch64-uefi-cloudinit-r10.qcow2"
+        );
+        let x86 = pick_cloud_image_arch(listing, None, Architecture::X86_64)
+            .unwrap()
+            .unwrap();
+        assert_eq!(x86, pick_cloud_image(listing, None).unwrap());
+        assert!(
+            pick_cloud_image_arch(listing, Some("3.23.5"), Architecture::Aarch64)
+                .unwrap()
+                .is_none()
+        );
+        let current = pick_cloud_image_arch(LISTING_NEW, None, Architecture::Aarch64)
+            .unwrap()
+            .unwrap();
+        assert_eq!(current.filename, "alpine-3.24.2-aarch64-cloudinit-r0.qcow2");
+        assert!(
+            pick_cloud_image_arch("<html></html>", None, Architecture::Aarch64)
+                .unwrap()
+                .is_none()
+        );
+    }
 
     fn fixture() -> ReleasesJson {
         let json = r#"{

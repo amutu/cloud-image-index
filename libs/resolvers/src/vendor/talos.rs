@@ -72,8 +72,18 @@ impl VendorProfile for Talos {
         release: &str,
         http: &reqwest::Client,
     ) -> Result<ResolvedImage> {
-        // Only the `latest` lookup reads GitHub, so only it knows the
-        // publish date.
+        self.resolve_release_arch(release, super::Architecture::X86_64, http)
+            .await?
+            .ok_or_else(|| anyhow!("talos: no amd64 image for {release}"))
+    }
+
+    async fn resolve_release_arch(
+        &self,
+        release: &str,
+        arch: super::Architecture,
+        http: &reqwest::Client,
+    ) -> Result<Option<ResolvedImage>> {
+        // latest 查询提供发布日期；显式版本仍需确认 release asset。
         let (version, published_at) = if release.trim() == "latest" {
             let latest = releases::find_latest(http).await?;
             (latest.version, latest.published_at)
@@ -88,7 +98,20 @@ impl VendorProfile for Talos {
             None => version.clone(),
         };
 
-        let filename = "nocloud-amd64.raw.xz";
+        let metadata_url =
+            format!("https://api.github.com/repos/siderolabs/talos/releases/tags/v{version}");
+        let metadata = http
+            .get(&metadata_url)
+            .header("Accept", "application/vnd.github+json")
+            .send()
+            .await?
+            .error_for_status()?
+            .text()
+            .await?;
+        if !has_asset(&metadata, arch)? {
+            return Ok(None);
+        }
+        let filename = format!("nocloud-{}.raw.xz", arch.debian_name());
         let url: Url =
             format!("https://factory.talos.dev/image/{DEFAULT_SCHEMATIC}/v{version}/{filename}")
                 .parse()
@@ -99,7 +122,7 @@ impl VendorProfile for Talos {
 
         let verifier = pick_verifier(http, sums_url, filename.to_string()).await?;
 
-        Ok(ResolvedImage {
+        Ok(Some(ResolvedImage {
             url,
             format: SourceFormat::Xz,
             os: "linux".to_string(),
@@ -120,8 +143,22 @@ impl VendorProfile for Talos {
                 published_at,
                 ..ImageFacts::default()
             },
-        })
+        }))
     }
+}
+
+fn has_asset(metadata: &str, arch: super::Architecture) -> Result<bool> {
+    #[derive(serde::Deserialize)]
+    struct Asset {
+        name: String,
+    }
+    #[derive(serde::Deserialize)]
+    struct Release {
+        assets: Vec<Asset>,
+    }
+    let release: Release = serde_json::from_str(metadata).context("parse talos release assets")?;
+    let filename = format!("nocloud-{}.raw.xz", arch.debian_name());
+    Ok(release.assets.iter().any(|asset| asset.name == filename))
 }
 
 /// Probe the factory's `.sha256` endpoint. Self-hosted / enterprise
@@ -157,5 +194,29 @@ async fn pick_verifier(
             "talos sha256 sidecar at {sums_url} returned unexpected status {status}; \
              refusing to downgrade verification"
         ))
+    }
+}
+
+#[cfg(test)]
+mod tests {
+    use super::*;
+
+    #[test]
+    fn arm_asset_is_required_and_x86_is_distinct() {
+        let metadata = r#"{"assets":[{"name":"nocloud-arm64.raw.xz"}]}"#;
+        assert!(
+            has_asset(metadata, super::super::Architecture::Aarch64)
+                .unwrap_or_else(|e| panic!("{e}"))
+        );
+        assert!(
+            !has_asset(metadata, super::super::Architecture::X86_64)
+                .unwrap_or_else(|e| panic!("{e}"))
+        );
+        assert!(
+            !has_asset(r#"{"assets":[]}"#, super::super::Architecture::Aarch64)
+                .unwrap_or_else(|e| panic!("{e}"))
+        );
+        assert!(has_asset("broken", super::super::Architecture::Aarch64).is_err());
+        assert!(has_asset("{}", super::super::Architecture::Aarch64).is_err());
     }
 }

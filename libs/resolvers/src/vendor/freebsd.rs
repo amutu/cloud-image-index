@@ -19,7 +19,7 @@ use anyhow::{Context, Result};
 use async_trait::async_trait;
 use url::Url;
 
-use super::{ResolvedImage, SourceFormat, VendorProfile, VersionEntry};
+use super::{Architecture, ResolvedImage, SourceFormat, VendorProfile, VersionEntry};
 use crate::verify::Sha256BsdSumsTls;
 
 pub struct FreeBsd;
@@ -56,6 +56,17 @@ impl VendorProfile for FreeBsd {
         release: &str,
         http: &reqwest::Client,
     ) -> Result<ResolvedImage> {
+        self.resolve_release_arch(release, Architecture::X86_64, http)
+            .await?
+            .ok_or_else(|| anyhow::anyhow!("freebsd: no x86_64 BASIC-CLOUDINIT-ZFS image"))
+    }
+
+    async fn resolve_release_arch(
+        &self,
+        release: &str,
+        arch: Architecture,
+        http: &reqwest::Client,
+    ) -> Result<Option<ResolvedImage>> {
         let version = if release.trim() == "latest" {
             releases::find_latest(http).await?
         } else {
@@ -71,10 +82,9 @@ impl VendorProfile for FreeBsd {
             .ok_or_else(|| anyhow::anyhow!("freebsd: version missing major: {version}"))?
             .to_string();
 
-        let filename = format!("FreeBSD-{version}-RELEASE-amd64-BASIC-CLOUDINIT-zfs.raw.xz");
-        let base = format!(
-            "https://download.freebsd.org/releases/VM-IMAGES/{version}-RELEASE/amd64/Latest/"
-        );
+        let Some((base, filename)) = releases::discover_image(http, &version, arch).await? else {
+            return Ok(None);
+        };
         let url: Url = format!("{base}{filename}")
             .parse()
             .context("freebsd image url")?;
@@ -82,7 +92,7 @@ impl VendorProfile for FreeBsd {
             .parse()
             .context("freebsd CHECKSUM.SHA256 url")?;
 
-        Ok(ResolvedImage {
+        Ok(Some(ResolvedImage {
             url,
             format: SourceFormat::Xz,
             os: "bsd".to_string(),
@@ -98,7 +108,10 @@ impl VendorProfile for FreeBsd {
             // BSD-style CHECKSUM.SHA256 is fetched at verify time,
             // so we don't have the upstream sha256 pre-download.
             expected_sha256: None,
-            facts: Default::default(),
-        })
+            facts: super::ImageFacts {
+                arch,
+                ..Default::default()
+            },
+        }))
     }
 }

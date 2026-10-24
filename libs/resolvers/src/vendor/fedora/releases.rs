@@ -105,7 +105,12 @@ pub fn token_for(version: &str) -> String {
 fn feed_versions(entries: &[Entry]) -> Vec<&str> {
     let mut versions: Vec<&str> = entries
         .iter()
-        .filter(|e| is_cloud_base_qcow2(e))
+        .filter(|e| {
+            matches!(e.arch.as_str(), "x86_64" | "aarch64")
+                && e.variant == "Cloud"
+                && e.subvariant == "Cloud_Base"
+                && e.link.ends_with(".qcow2")
+        })
         .map(|e| e.version.as_str())
         .collect();
     versions.sort_by_key(|v| std::cmp::Reverse((version_number(v), is_pre_release(v))));
@@ -225,6 +230,67 @@ pub fn resolve(entries: &[Entry], release: &str) -> Result<Resolved> {
     })
 }
 
+/// Resolve only an artifact present in the feed for the requested architecture.
+pub fn resolve_arch(
+    entries: &[Entry],
+    release: &str,
+    arch: crate::vendor::Architecture,
+) -> Result<Option<Resolved>> {
+    if arch == crate::vendor::Architecture::X86_64 {
+        if !release.eq_ignore_ascii_case("latest") {
+            parse_version(release)?;
+        }
+        if entries.iter().any(|e| {
+            is_cloud_base_qcow2(e)
+                && (release.eq_ignore_ascii_case("latest")
+                    || parse_version(release).ok().as_deref() == Some(&e.version))
+        }) {
+            return resolve(entries, release).map(Some);
+        }
+        return Ok(None);
+    }
+    let version = if release.eq_ignore_ascii_case("latest") {
+        None
+    } else {
+        Some(parse_version(release)?)
+    };
+    let cloud = entries.iter().filter(|e| {
+        e.arch == arch.as_str()
+            && e.variant == "Cloud"
+            && e.subvariant == "Cloud_Base"
+            && e.link.ends_with(".qcow2")
+    });
+    let target = if let Some(version) = version {
+        cloud
+            .filter(|e| e.version == version)
+            .max_by(|a, b| crate::vendor::natural_cmp(&a.link, &b.link))
+    } else {
+        cloud
+            .filter(|e| !is_pre_release(&e.version))
+            .max_by(|a, b| {
+                version_number(&a.version)
+                    .cmp(&version_number(&b.version))
+                    .then_with(|| crate::vendor::natural_cmp(&a.link, &b.link))
+            })
+    };
+    let Some(target) = target else {
+        return Ok(None);
+    };
+    let filename = target.link.rsplit('/').next().unwrap_or_default();
+    let suffix = format!(".{}.qcow2", arch.as_str());
+    let build = filename
+        .strip_prefix("Fedora-Cloud-Base-Generic-")
+        .and_then(|name| name.strip_suffix(&suffix))
+        .filter(|build| !build.is_empty())
+        .with_context(|| format!("fedora: unrecognized image filename {filename}"))?;
+    Ok(Some(Resolved {
+        major: target.version.clone(),
+        build: build.to_string(),
+        url: target.link.clone(),
+        sha256: target.sha256.clone(),
+    }))
+}
+
 /// Accept `42`, `f42`, `Fedora-42` — anything that uniquely
 /// identifies the Fedora major — or a pre-release token such as
 /// `45_Beta`, returned in the feed's spelling (`45 Beta`).
@@ -302,6 +368,75 @@ mod tests {
                 sha256: "wrong".to_string(),
             },
         ]
+    }
+
+    #[test]
+    fn arm_feed_selection_and_build_preserve_x86_default() {
+        let json = r#"[
+            {"version":"44","arch":"x86_64","variant":"Cloud","subvariant":"Cloud_Base","link":"https://example.test/Fedora-Cloud-Base-Generic-44-1.7.x86_64.qcow2","sha256":"x86"},
+            {"version":"44","arch":"aarch64","variant":"Cloud","subvariant":"Cloud_Base","link":"https://example.test/Fedora-Cloud-Base-Generic-44-1.8.aarch64.qcow2","sha256":"arm"},
+            {"version":"45 Beta","arch":"aarch64","variant":"Cloud","subvariant":"Cloud_Base","link":"https://example.test/Fedora-Cloud-Base-Generic-45_Beta-1.3.aarch64.qcow2","sha256":"beta"},
+            {"version":"44","arch":"aarch64","variant":"Cloud","subvariant":"Cloud_Base_UKI","link":"https://example.test/uki.aarch64.qcow2","sha256":"uki"}
+        ]"#;
+        let entries: Vec<Entry> = serde_json::from_str(json).unwrap();
+        let arm = resolve_arch(&entries, "latest", crate::vendor::Architecture::Aarch64)
+            .unwrap()
+            .unwrap();
+        assert_eq!(arm.major, "44");
+        assert_eq!(arm.build, "44-1.8");
+        assert_eq!(arm.sha256, "arm");
+        assert!(arm.url.ends_with("44-1.8.aarch64.qcow2"));
+        let beta = resolve_arch(&entries, "45_Beta", crate::vendor::Architecture::Aarch64)
+            .unwrap()
+            .unwrap();
+        assert_eq!(beta.build, "45_Beta-1.3");
+        let x86 = resolve(&entries, "latest").unwrap();
+        assert_eq!(x86.build, "44-1.7");
+        assert_eq!(x86.sha256, "x86");
+    }
+
+    #[test]
+    fn arm_only_release_is_catalogued_without_failing_x86_resolution() {
+        let mut arm = entry(
+            "44",
+            "Cloud",
+            "Cloud_Base",
+            "https://example.test/Fedora-Cloud-Base-Generic-44-1.8.aarch64.qcow2",
+        );
+        arm.arch = "aarch64".to_string();
+        let entries = vec![arm];
+        assert_eq!(release_versions(&entries), vec!["44"]);
+        assert!(
+            resolve_arch(&entries, "44", crate::vendor::Architecture::X86_64)
+                .unwrap()
+                .is_none()
+        );
+    }
+
+    #[test]
+    fn arm_absence_does_not_hide_invalid_tokens_or_image_names() {
+        let x86 = vec![entry(
+            "44",
+            "Cloud",
+            "Cloud_Base",
+            "https://example.test/Fedora-Cloud-Base-Generic-44-1.7.x86_64.qcow2",
+        )];
+        assert!(
+            resolve_arch(&x86, "44", crate::vendor::Architecture::Aarch64)
+                .unwrap()
+                .is_none()
+        );
+        assert!(resolve_arch(&x86, "bad-token", crate::vendor::Architecture::Aarch64).is_err());
+        let malformed = vec![Entry {
+            arch: "aarch64".to_string(),
+            ..entry(
+                "44",
+                "Cloud",
+                "Cloud_Base",
+                "https://example.test/unrecognized.aarch64.qcow2",
+            )
+        }];
+        assert!(resolve_arch(&malformed, "44", crate::vendor::Architecture::Aarch64).is_err());
     }
 
     #[test]

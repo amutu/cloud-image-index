@@ -28,6 +28,22 @@ and its OpenAPI description at
 <https://cloud-images.tritoncloud.io/v1/openapi.json>, and regenerated
 daily. See [docs/design.md](docs/design.md).
 
+## Architectures
+
+The generator resolves `x86_64` and `aarch64` artifacts independently.
+Vendor filenames retain their native `amd64`/`x86_64` and `arm64`/`aarch64`
+spellings; the index uses `x86_64` and `aarch64` consistently. ARM discovery
+is supported for Ubuntu, Debian, Rocky, AlmaLinux, CentOS Stream, Fedora,
+Oracle Linux, openSUSE Leap, Alpine, FreeBSD and Talos. Arch Linux, the
+listed OpenBSD community build, OmniOS and SmartOS remain x86-only.
+An architecture is included only when its upstream source serves it.
+
+Architectures with the same build id share a build's `artifacts` array;
+different build ids remain separate, newest-first. Clients must search
+all builds for their desired architecture, not assume the first build
+contains it. The SmartOS `cloud-image` importer remains x86-only; indexing
+an ARM artifact does not imply that SmartOS can boot or import it.
+
 ## Stability
 
 From 1.0:

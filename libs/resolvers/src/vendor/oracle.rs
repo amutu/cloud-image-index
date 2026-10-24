@@ -22,7 +22,9 @@ use anyhow::{Context, Result};
 use async_trait::async_trait;
 use url::Url;
 
-use super::{PinnedQcow2, ResolvedImage, VendorProfile, VersionEntry, checksum_document};
+use super::{
+    Architecture, PinnedQcow2, ResolvedImage, VendorProfile, VersionEntry, checksum_document,
+};
 use crate::verify::SumsStyle;
 
 pub struct Oracle;
@@ -56,9 +58,22 @@ impl VendorProfile for Oracle {
         release: &str,
         http: &reqwest::Client,
     ) -> Result<ResolvedImage> {
-        let resolved = releases::resolve(http, release).await?;
+        self.resolve_release_arch(release, Architecture::X86_64, http)
+            .await?
+            .ok_or_else(|| anyhow::anyhow!("oracle: no x86_64 KVM image"))
+    }
+
+    async fn resolve_release_arch(
+        &self,
+        release: &str,
+        arch: Architecture,
+        http: &reqwest::Client,
+    ) -> Result<Option<ResolvedImage>> {
+        let Some(resolved) = releases::resolve_arch(http, release, arch).await? else {
+            return Ok(None);
+        };
         let url: Url = resolved.url.parse().context("oracle image url")?;
-        PinnedQcow2 {
+        let mut image = PinnedQcow2 {
             url,
             series: format!("oracle{}", resolved.major),
             version: resolved.version(),
@@ -73,6 +88,15 @@ impl VendorProfile for Oracle {
             signatures: Vec::new(),
             sha256: resolved.sha256,
         }
-        .into_resolved("oracle")
+        .into_resolved("oracle")?;
+        image.facts.arch = arch;
+        image.facts.variant = Some(
+            match arch {
+                Architecture::X86_64 => "kvm",
+                Architecture::Aarch64 => "kvm-cloud",
+            }
+            .to_string(),
+        );
+        Ok(Some(image))
     }
 }

@@ -23,7 +23,8 @@ use async_trait::async_trait;
 use url::Url;
 
 use super::{
-    ImageFacts, ResolvedImage, SourceFormat, VendorProfile, VersionEntry, detached_signature,
+    Architecture, ImageFacts, ResolvedImage, SourceFormat, VendorProfile, VersionEntry,
+    detached_signature,
 };
 use crate::verify::Sha512SidecarTls;
 
@@ -47,6 +48,17 @@ impl VendorProfile for Alpine {
         release: &str,
         http: &reqwest::Client,
     ) -> Result<ResolvedImage> {
+        self.resolve_release_arch(release, Architecture::X86_64, http)
+            .await?
+            .ok_or_else(|| anyhow::anyhow!("alpine: no x86_64 cloud-init image"))
+    }
+
+    async fn resolve_release_arch(
+        &self,
+        release: &str,
+        arch: Architecture,
+        http: &reqwest::Client,
+    ) -> Result<Option<ResolvedImage>> {
         let rj = releases::fetch(http)
             .await
             .with_context(|| "fetch alpine releases.json")?;
@@ -77,8 +89,9 @@ impl VendorProfile for Alpine {
         // A full point-release token asks for that exact build; a
         // branch or `latest` takes the newest image the branch has.
         let want = (release.matches('.').count() == 2).then_some(resolved.version.as_str());
-        let image = releases::pick_cloud_image(&listing, want)
-            .ok_or_else(|| anyhow::anyhow!("alpine: no x86_64 cloud-init qcow2 under {base}"))?;
+        let Some(image) = releases::pick_cloud_image_arch(&listing, want, arch)? else {
+            return Ok(None);
+        };
         let version = image.version;
         let filename = image.filename;
         let url: Url = format!("{base}{filename}")
@@ -89,7 +102,7 @@ impl VendorProfile for Alpine {
             .context("alpine sha512 sidecar url")?;
 
         let signatures = vec![detached_signature(url.as_str(), ".asc")?];
-        Ok(ResolvedImage {
+        Ok(Some(ResolvedImage {
             url,
             format: SourceFormat::Qcow2,
             os: "linux".to_string(),
@@ -106,10 +119,11 @@ impl VendorProfile for Alpine {
             // before download.
             expected_sha256: None,
             facts: ImageFacts {
+                arch,
                 point_release: Some(version.clone()),
                 signatures,
                 ..ImageFacts::default()
             },
-        })
+        }))
     }
 }

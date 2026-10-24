@@ -127,6 +127,16 @@ pub struct Resolved {
 }
 
 pub async fn resolve(http: &reqwest::Client, release: &str) -> Result<Resolved> {
+    resolve_arch(http, release, crate::vendor::Architecture::X86_64)
+        .await?
+        .context("no openSUSE x86_64 image")
+}
+
+pub async fn resolve_arch(
+    http: &reqwest::Client,
+    release: &str,
+    arch: crate::vendor::Architecture,
+) -> Result<Option<Resolved>> {
     let token = release.trim();
     let version = if token.eq_ignore_ascii_case("latest") {
         latest_stable(&fetch_distributions(http).await?)
@@ -134,28 +144,32 @@ pub async fn resolve(http: &reqwest::Client, release: &str) -> Result<Resolved> 
     } else {
         parse_leap_version(token)?
     };
-    find_in_version(http, &version).await
+    find_in_version(http, &version, arch).await
 }
 
-async fn find_in_version(http: &reqwest::Client, version: &str) -> Result<Resolved> {
+async fn find_in_version(
+    http: &reqwest::Client,
+    version: &str,
+    arch: crate::vendor::Architecture,
+) -> Result<Option<Resolved>> {
     let appliances_base = format!("{LEAP_BASE}{version}/appliances/");
     let entries = fetch_dir_json(http, &format!("{appliances_base}?json=1")).await?;
-    let filename = pick_cloud_build(&entries, version).ok_or_else(|| {
-        anyhow::anyhow!("no `Cloud-Build…x86_64.qcow2` entry under {appliances_base}")
-    })?;
+    let Some(filename) = pick_cloud_build_arch(&entries, version, arch) else {
+        return Ok(None);
+    };
     let url = format!("{appliances_base}{filename}");
     let sidecar_url = format!("{url}.sha256");
     let sha256 = fetch_sidecar_hash(http, &sidecar_url, &filename).await?;
-    let build = build_id(&filename, version).unwrap_or_else(|| filename.clone());
+    let build = build_id_arch(&filename, version, arch).context("openSUSE build filename")?;
 
-    Ok(Resolved {
+    Ok(Some(Resolved {
         leap_version: version.to_string(),
         build,
         url,
         sha256,
         checksum_url: sidecar_url,
         checksum_filename: filename,
-    })
+    }))
 }
 
 async fn fetch_dir_json(http: &reqwest::Client, url: &str) -> Result<Vec<DirEntry>> {
@@ -195,9 +209,18 @@ async fn fetch_sidecar_hash(
 /// Find a `…Leap-<ver>-Minimal-VM.x86_64-…Cloud-Build<n>.<m>.qcow2`
 /// entry, skipping the rolling pointer (no `Build` tag) and any
 /// non-Cloud / non-x86_64 flavors.
+#[cfg(test)]
 fn pick_cloud_build(entries: &[DirEntry], leap_version: &str) -> Option<String> {
-    let prefix_old = format!("openSUSE-Leap-{leap_version}-Minimal-VM.x86_64-");
-    let prefix_new = format!("Leap-{leap_version}-Minimal-VM.x86_64-");
+    pick_cloud_build_arch(entries, leap_version, crate::vendor::Architecture::X86_64)
+}
+
+fn pick_cloud_build_arch(
+    entries: &[DirEntry],
+    leap_version: &str,
+    arch: crate::vendor::Architecture,
+) -> Option<String> {
+    let prefix_old = format!("openSUSE-Leap-{leap_version}-Minimal-VM.{}-", arch.as_str());
+    let prefix_new = format!("Leap-{leap_version}-Minimal-VM.{}-", arch.as_str());
     let mut best: Option<&str> = None;
     for entry in entries {
         let name: &str = entry.name.trim_end_matches('/');
@@ -224,9 +247,18 @@ fn pick_cloud_build(entries: &[DirEntry], leap_version: &str) -> Option<String> 
 /// from the prefix into `Cloud-Build…`, while Leap 15 has an inner
 /// version (`15.6.0-Cloud-Build…`); we split on `Cloud-` and stitch
 /// whichever side is non-empty back to the leading `<X.Y>`.
+#[cfg(test)]
 fn build_id(filename: &str, leap_version: &str) -> Option<String> {
-    let prefix_old = format!("openSUSE-Leap-{leap_version}-Minimal-VM.x86_64-");
-    let prefix_new = format!("Leap-{leap_version}-Minimal-VM.x86_64-");
+    build_id_arch(filename, leap_version, crate::vendor::Architecture::X86_64)
+}
+
+fn build_id_arch(
+    filename: &str,
+    leap_version: &str,
+    arch: crate::vendor::Architecture,
+) -> Option<String> {
+    let prefix_old = format!("openSUSE-Leap-{leap_version}-Minimal-VM.{}-", arch.as_str());
+    let prefix_new = format!("Leap-{leap_version}-Minimal-VM.{}-", arch.as_str());
     let inner = filename
         .strip_prefix(&prefix_old)
         .or_else(|| filename.strip_prefix(&prefix_new))?;
@@ -264,6 +296,58 @@ mod tests {
                 name: (*n).to_string(),
             })
             .collect()
+    }
+
+    #[test]
+    fn arm_selection_build_and_checksum_filename_for_both_leap_names() {
+        for (version, arm, build, x86) in [
+            (
+                "16.0",
+                "Leap-16.0-Minimal-VM.aarch64-Cloud-Build16.143.qcow2",
+                "16.0-Build16.143",
+                "Leap-16.0-Minimal-VM.x86_64-Cloud-Build16.144.qcow2",
+            ),
+            (
+                "15.6",
+                "openSUSE-Leap-15.6-Minimal-VM.aarch64-15.6.0-Cloud-Build19.143.qcow2",
+                "15.6.0-Build19.143",
+                "openSUSE-Leap-15.6-Minimal-VM.x86_64-15.6.0-Cloud-Build19.144.qcow2",
+            ),
+        ] {
+            let dir = entries(&[
+                arm,
+                x86,
+                "Leap-16.0-Minimal-VM.aarch64-Cloud.qcow2",
+                "Leap-16.0-Minimal-VM.aarch64-kvm-and-xen-Build16.145.qcow2",
+                "Leap-16.0-Minimal-VM.aarch64-Cloud-Build16.99.qcow2",
+                "Leap-16.0-Minimal-VM.aarch64-Cloud-Build16.145.qcow2.sha256",
+            ]);
+            let filename =
+                pick_cloud_build_arch(&dir, version, crate::vendor::Architecture::Aarch64).unwrap();
+            assert_eq!(filename, arm);
+            assert_eq!(
+                build_id_arch(&filename, version, crate::vendor::Architecture::Aarch64).as_deref(),
+                Some(build)
+            );
+            let sums = format!(
+                "{}  {x86}\n{}  {filename}\n",
+                "b".repeat(64),
+                "a".repeat(64)
+            );
+            assert_eq!(
+                parse_sums_file(&sums, &filename).as_deref(),
+                Some("a".repeat(64).as_str())
+            );
+            assert_eq!(pick_cloud_build(&dir, version).as_deref(), Some(x86));
+        }
+    }
+
+    #[test]
+    fn arm_selection_returns_none_for_x86_only_listing() {
+        let dir = entries(&["Leap-16.0-Minimal-VM.x86_64-Cloud-Build16.2.qcow2"]);
+        assert!(
+            pick_cloud_build_arch(&dir, "16.0", crate::vendor::Architecture::Aarch64).is_none()
+        );
     }
 
     #[test]

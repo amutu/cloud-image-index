@@ -59,33 +59,77 @@ impl VendorProfile for CentosStream {
         http: &reqwest::Client,
     ) -> Result<ResolvedImage> {
         let resolved = releases::resolve(http, release).await?;
-        let url: Url = resolved.url.parse().context("centos-stream image url")?;
-        PinnedQcow2 {
-            url,
-            series: format!("centos{}", resolved.stream),
-            version: resolved.build,
-            description: format!(
-                "CentOS Stream {} CloudInit NoCloud compatible image. \
-                 Built to run on bhyve virtual machines.",
-                resolved.stream
-            ),
-            homepage: "https://www.centos.org/",
-            document: checksum_document(
-                &resolved.checksum_url,
-                &resolved.checksum_filename,
-                SumsStyle::Bsd,
-            )?,
-            point_release: None,
-            signatures: Vec::new(),
-            sha256: resolved.sha256,
-        }
-        .into_resolved("centos-stream")
+        resolved_image(resolved)
     }
+
+    async fn resolve_release_arch(
+        &self,
+        release: &str,
+        arch: super::Architecture,
+        http: &reqwest::Client,
+    ) -> Result<Option<ResolvedImage>> {
+        releases::resolve_arch(http, release, arch)
+            .await?
+            .map(resolved_image)
+            .transpose()
+    }
+}
+
+fn resolved_image(resolved: releases::Resolved) -> Result<ResolvedImage> {
+    let url: Url = resolved.url.parse().context("centos-stream image url")?;
+    PinnedQcow2 {
+        url,
+        series: format!("centos{}", resolved.stream),
+        version: resolved.build,
+        description: format!(
+            "CentOS Stream {} CloudInit NoCloud compatible image. \
+                 Built to run on bhyve virtual machines.",
+            resolved.stream
+        ),
+        homepage: "https://www.centos.org/",
+        document: checksum_document(
+            &resolved.checksum_url,
+            &resolved.checksum_filename,
+            SumsStyle::Bsd,
+        )?,
+        point_release: None,
+        signatures: Vec::new(),
+        sha256: resolved.sha256,
+    }
+    .into_resolved("centos-stream")
 }
 
 #[cfg(test)]
 mod tests {
     use super::*;
+
+    #[test]
+    fn arm_image_keeps_dated_build_and_checksum_filename() {
+        let filename = "CentOS-Stream-GenericCloud-9-20260504.10.aarch64.qcow2";
+        let url = format!("https://cloud.centos.org/centos/9-stream/aarch64/images/{filename}");
+        let checksum_url = format!("{url}.SHA256SUM");
+        let image = resolved_image(releases::Resolved {
+            stream: "9".to_string(),
+            build: "20260504.10".to_string(),
+            url,
+            sha256: "a".repeat(64),
+            checksum_url: checksum_url.clone(),
+            checksum_filename: filename.to_string(),
+        })
+        .unwrap_or_else(|e| panic!("{e:#}"));
+        assert_eq!(image.version, "20260504.10");
+        assert_eq!(
+            image.verifier.checksum_source(),
+            crate::verify::ChecksumSource::Pinned {
+                algorithm: crate::verify::HashAlgorithm::Sha256,
+                hash: "a".repeat(64),
+                document: Some(
+                    checksum_document(&checksum_url, filename, SumsStyle::Bsd)
+                        .unwrap_or_else(|e| panic!("{e:#}"))
+                ),
+            }
+        );
+    }
 
     #[test]
     fn catalog_is_newest_first() {

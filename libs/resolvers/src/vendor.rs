@@ -38,7 +38,7 @@ pub mod ubuntu;
 /// after `Build19.99`. Plain string order gets both wrong once a
 /// number gains a digit. Used to pick a vendor's newest build from a
 /// listing.
-pub(crate) fn natural_cmp(a: &str, b: &str) -> std::cmp::Ordering {
+pub fn natural_cmp(a: &str, b: &str) -> std::cmp::Ordering {
     use std::cmp::Ordering;
     let (mut a, mut b) = (a, b);
     loop {
@@ -245,6 +245,30 @@ pub struct VersionEntry {
     pub channel: bool,
 }
 
+/// Canonical index architectures; vendor filenames may use different spellings.
+#[derive(Debug, Clone, Copy, Default, PartialEq, Eq, Hash)]
+pub enum Architecture {
+    #[default]
+    X86_64,
+    Aarch64,
+}
+
+impl Architecture {
+    pub const fn as_str(self) -> &'static str {
+        match self {
+            Self::X86_64 => "x86_64",
+            Self::Aarch64 => "aarch64",
+        }
+    }
+
+    pub const fn debian_name(self) -> &'static str {
+        match self {
+            Self::X86_64 => "amd64",
+            Self::Aarch64 => "arm64",
+        }
+    }
+}
+
 #[derive(Debug, Clone, Copy, serde::Deserialize)]
 #[serde(rename_all = "snake_case")]
 pub enum SourceFormat {
@@ -291,6 +315,10 @@ pub struct ResolvedImage {
 /// the vendor itself publishes.
 #[derive(Debug, Clone, Default, PartialEq, Eq)]
 pub struct ImageFacts {
+    /// Architecture requested through `resolve_arch`; legacy `resolve` is x86_64.
+    pub arch: Architecture,
+    /// Vendor-specific flavour when it differs from the profile default.
+    pub variant: Option<String>,
     /// The point release the image belongs to (e.g. `9.8`), for vendors
     /// whose releases are majors with point releases.
     pub point_release: Option<String>,
@@ -362,6 +390,33 @@ pub trait VendorProfile: Send + Sync {
         let image = self.resolve_release(release, http).await?;
         validate_version_token(&image.version).context("build id")?;
         Ok(image)
+    }
+
+    async fn resolve_arch(
+        &self,
+        release: &str,
+        arch: Architecture,
+        http: &reqwest::Client,
+    ) -> Result<Option<ResolvedImage>> {
+        validate_version_token(release)?;
+        let Some(mut image) = self.resolve_release_arch(release, arch, http).await? else {
+            return Ok(None);
+        };
+        validate_version_token(&image.version).context("build id")?;
+        image.facts.arch = arch;
+        Ok(Some(image))
+    }
+
+    async fn resolve_release_arch(
+        &self,
+        release: &str,
+        arch: Architecture,
+        http: &reqwest::Client,
+    ) -> Result<Option<ResolvedImage>> {
+        match arch {
+            Architecture::X86_64 => self.resolve_release(release, http).await.map(Some),
+            Architecture::Aarch64 => Ok(None),
+        }
     }
 
     /// Resolve a release token into a concrete image. Callers must go
@@ -482,6 +537,46 @@ pub fn lookup(vendor: Vendor) -> Box<dyn VendorProfile> {
 #[cfg(test)]
 mod tests {
     use super::*;
+
+    #[test]
+    fn architecture_names_and_default() {
+        assert_eq!(Architecture::default(), Architecture::X86_64);
+        assert_eq!(Architecture::X86_64.as_str(), "x86_64");
+        assert_eq!(Architecture::Aarch64.as_str(), "aarch64");
+        assert_eq!(Architecture::X86_64.debian_name(), "amd64");
+        assert_eq!(Architecture::Aarch64.debian_name(), "arm64");
+    }
+
+    #[tokio::test]
+    async fn resolve_arch_defaults_and_validation() -> Result<()> {
+        let http = crate::test_client_builder().build()?;
+        let profile = ReportsBuild("1");
+        let image = profile
+            .resolve_arch("9", Architecture::X86_64, &http)
+            .await?
+            .unwrap_or_else(|| panic!("missing x86 image"));
+        assert_eq!(image.facts.arch, Architecture::X86_64);
+        assert!(image.facts.variant.is_none());
+        assert!(
+            profile
+                .resolve_arch("9", Architecture::Aarch64, &http)
+                .await?
+                .is_none()
+        );
+        assert!(
+            profile
+                .resolve_arch("../x", Architecture::Aarch64, &http)
+                .await
+                .is_err()
+        );
+        assert!(
+            ReportsBuild("../x")
+                .resolve_arch("9", Architecture::X86_64, &http)
+                .await
+                .is_err()
+        );
+        Ok(())
+    }
 
     #[test]
     fn natural_cmp_orders_digit_runs_as_numbers() {

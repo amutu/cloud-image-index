@@ -439,8 +439,10 @@ One-time setup, in the repository settings:
 `libs/resolvers` (carried over from that second copy) and writes the
 tree. It is a first approximation. Known gaps, as of a full run on 2026-10-05:
 
-- One build per release (the vendor's current one) and one artifact
-  (the profile's default variant, x86_64). No vault archives.
+- Current builds are resolved separately for x86_64 and aarch64 where
+  the vendor provides them. Equal build ids share artifacts; different
+  build ids remain separate, newest-first. Oracle's ARM variant is
+  `kvm-cloud`, distinct from its x86 `kvm`. No vault archives.
 - Every digest records the vendor document it came from, preferring a
   generic checksum file (gnu, bsd or bare) a client can read back: Ubuntu
   and Fedora find their images through their feeds (Simple Streams,

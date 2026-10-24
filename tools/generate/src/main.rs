@@ -42,12 +42,12 @@ use clap::{Parser, Subcommand};
 use generate::lifecycle;
 use generate::policy::{self, Candidate};
 use generate::{
-    HeadInfo, OnResolveFailure, artifact, build, digests, fail_if_transient, fill_from_previous,
-    http_failure, is_transient_error, on_resolve_failure, require_digest, signature,
-    vendor_does_not_serve, with_retries, write,
+    HeadInfo, artifact, build, digests, fail_if_transient, fill_from_previous, http_failure,
+    is_transient_error, merge_builds, require_digest, signature, vendor_does_not_serve,
+    with_retries, write,
 };
 use resolvers::verify::{ChecksumSource, fetch_expected_hash};
-use resolvers::{ResolvedImage, Vendor, VersionEntry};
+use resolvers::{Architecture, ResolvedImage, Vendor, VersionEntry};
 
 /// A vendor whose run fails transiently (no response, 429, 5xx) is tried
 /// this many times in all, this far apart, before it counts as failed.
@@ -328,26 +328,33 @@ async fn generate_vendor(
         if !policy::include_entry(&entry).with_context(|| format!("{vendor}: list versions"))? {
             continue;
         }
-        let image = match profile.resolve(&entry.token, http).await {
-            Ok(image) => image,
-            Err(e) => match on_resolve_failure(http_failure(&e)) {
-                OnResolveFailure::DropRelease => {
+        for arch in [Architecture::X86_64, Architecture::Aarch64] {
+            let image = match profile.resolve_arch(&entry.token, arch, http).await {
+                Ok(Some(image)) => image,
+                Ok(None) => continue,
+                Err(e)
+                    if http_failure(&e)
+                        .flatten()
+                        .is_some_and(vendor_does_not_serve) =>
+                {
                     problems.warn(format!(
-                        "{vendor}: left out {:?}, vendor does not serve it: {e:#}",
-                        entry.token
+                        "{vendor}: left out {:?} {}, vendor does not serve it: {e:#}",
+                        entry.token,
+                        arch.as_str()
                     ));
                     continue;
                 }
-                OnResolveFailure::FailVendor => {
+                Err(e) => {
                     return Err(e.context(format!(
-                        "{vendor}: resolve {:?} failed, keeping previous files",
-                        entry.token
+                        "{vendor}: resolve {:?} {} failed, keeping previous files",
+                        entry.token,
+                        arch.as_str()
                     )));
                 }
-            },
-        };
-        if let Some(build) = build_for(http, vendor, &image, previous, now, problems).await? {
-            resolved.push((entry, image, build));
+            };
+            if let Some(build) = build_for(http, vendor, &image, previous, now, problems).await? {
+                resolved.push((entry.clone(), image, build));
+            }
         }
     }
     let homepage = resolved
@@ -367,7 +374,7 @@ async fn generate_vendor(
         let mut list = BuildList {
             distro: vendor.id(),
             release: planned.id.clone(),
-            builds: vec![resolved[planned.candidate].2.clone()],
+            builds: merge_builds(planned.candidates.iter().map(|&i| resolved[i].2.clone())),
         };
         write::preserve_first_seen(
             previous.and_then(|p| write::previous_builds(p, &vendor.id(), &planned.id)),

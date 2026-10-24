@@ -29,6 +29,53 @@ fn read<T: DeserializeOwned>(relative: &str) -> Result<T, String> {
 }
 
 #[test]
+fn both_clients_read_mixed_architectures_and_arch_specific_builds() -> Result<(), String> {
+    let mut value: serde_json::Value = read("../../examples/v1/images.json")?;
+    let images = value["images"]
+        .as_array_mut()
+        .unwrap_or_else(|| panic!("missing fixture array"));
+    let mut arm_only = images[0].clone();
+    arm_only["build"]["build"] = "arm-newer".into();
+    for a in arm_only["build"]["artifacts"]
+        .as_array_mut()
+        .unwrap_or_else(|| panic!("missing fixture array"))
+    {
+        a["arch"] = "aarch64".into();
+    }
+    let mut arm = arm_only["build"]["artifacts"][0].clone();
+    arm["variant"] = "kvm-cloud".into();
+    images[0]["build"]["artifacts"]
+        .as_array_mut()
+        .unwrap_or_else(|| panic!("missing fixture array"))
+        .insert(0, arm);
+    images.insert(0, arm_only);
+    let current: generated::ImageList =
+        serde_json::from_value(value.clone()).map_err(|e| e.to_string())?;
+    let old: v1_0::ImageList = serde_json::from_value(value).map_err(|e| e.to_string())?;
+    for parsed in [serde_json::to_value(current), serde_json::to_value(old)] {
+        let parsed = parsed.map_err(|e| e.to_string())?;
+        assert_eq!(parsed["images"][0]["build"]["build"], "arm-newer");
+        assert_eq!(
+            parsed["images"][0]["build"]["artifacts"][0]["arch"],
+            "aarch64"
+        );
+        assert_eq!(
+            parsed["images"][1]["build"]["artifacts"][0]["arch"],
+            "aarch64"
+        );
+        assert_eq!(
+            parsed["images"][1]["build"]["artifacts"][0]["variant"],
+            "kvm-cloud"
+        );
+        assert_eq!(
+            parsed["images"][1]["build"]["artifacts"][1]["arch"],
+            "x86_64"
+        );
+    }
+    Ok(())
+}
+
+#[test]
 fn a_1_0_client_reads_todays_image_list() -> Result<(), String> {
     let list: v1_0::ImageList = read("../../examples/v1/images.json")?;
     assert!(!list.images.is_empty());

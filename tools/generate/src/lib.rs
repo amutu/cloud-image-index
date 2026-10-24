@@ -8,8 +8,8 @@
 //!
 //! The resolvers were written to resolve one release token to one image
 //! for an import tool. This crate maps their output onto the index
-//! format as a first approximation: one build (the vendor's current one)
-//! and one artifact (the profile's default variant, x86_64) per release.
+//! format: current x86_64 and aarch64 artifacts per release. Architectures
+//! with equal build ids share a build; distinct builds stay separate.
 //! Per-vendor policy that the resolvers do not express (which list
 //! entries are releases, which release holds which alias) lives in
 //! [`policy`]. Network access is in `main.rs`; everything here is pure
@@ -237,6 +237,42 @@ pub fn build(
     }
 }
 
+pub fn merge_builds(builds: impl IntoIterator<Item = Build>) -> Vec<Build> {
+    let mut merged: Vec<Build> = Vec::new();
+    for mut build in builds {
+        if let Some(existing) = merged.iter_mut().find(|b| b.build == build.build) {
+            for artifact in build.artifacts {
+                if !existing.artifacts.iter().any(|a| {
+                    a.variant == artifact.variant
+                        && a.arch == artifact.arch
+                        && a.format == artifact.format
+                }) {
+                    existing.artifacts.push(artifact);
+                }
+            }
+        } else {
+            let mut artifacts: Vec<Artifact> = Vec::new();
+            for artifact in build.artifacts {
+                if !artifacts.iter().any(|a| {
+                    a.variant == artifact.variant
+                        && a.arch == artifact.arch
+                        && a.format == artifact.format
+                }) {
+                    artifacts.push(artifact);
+                }
+            }
+            build.artifacts = artifacts;
+            merged.push(build);
+        }
+    }
+    merged.sort_by(|a, b| {
+        b.published_at
+            .cmp(&a.published_at)
+            .then_with(|| resolvers::vendor::natural_cmp(&b.build, &a.build))
+    });
+    merged
+}
+
 /// cloud-init datasources a vendor's images support. SmartOS is not a
 /// cloud-init image (it uses `mdata-get`); every other built-in profile
 /// resolves a NoCloud-capable image.
@@ -247,8 +283,8 @@ pub fn datasources(vendor: Vendor) -> Vec<String> {
     }
 }
 
-/// The artifact for a resolved image: the profile's default variant,
-/// x86_64 (the only architecture the resolvers handle).
+/// The artifact for a resolved image, with its requested architecture
+/// and resolved variant (or the profile's default variant).
 pub fn artifact(
     vendor: Vendor,
     image: &ResolvedImage,
@@ -257,9 +293,15 @@ pub fn artifact(
 ) -> Artifact {
     let (format, compression) = image_format(image.format);
     Artifact {
-        variant: Some(vendor.default_variant().to_string()),
+        variant: Some(
+            image
+                .facts
+                .variant
+                .clone()
+                .unwrap_or_else(|| vendor.default_variant().to_string()),
+        ),
         default_variant: Some(true),
-        arch: "x86_64".to_string(),
+        arch: image.facts.arch.as_str().to_string(),
         format,
         compression,
         firmware: Vec::new(),
@@ -485,6 +527,49 @@ mod tests {
             expected_sha256: Some("abc".to_string()),
             facts: Default::default(),
         }
+    }
+
+    #[test]
+    fn artifact_uses_resolved_arch_and_variant() {
+        let mut image = resolved(SourceFormat::Qcow2, true);
+        image.facts.arch = resolvers::Architecture::Aarch64;
+        image.facts.variant = Some("kvm-cloud".to_string());
+        let a = artifact(Vendor::Oracle, &image, &HeadInfo::default(), sha("arm"));
+        assert_eq!(a.arch, "aarch64");
+        assert_eq!(a.variant.as_deref(), Some("kvm-cloud"));
+    }
+
+    #[test]
+    fn merge_builds_keeps_architectures_builds_and_file_digests() {
+        let image = resolved(SourceFormat::Qcow2, true);
+        let now = chrono::Utc::now();
+        let x86 = sample_artifact(None, None, sha("x86"));
+        let mut arm = x86.clone();
+        arm.arch = "aarch64".to_string();
+        arm.locations[0].url = "https://v.example/arm".to_string();
+        integrity_mut(&mut arm).digests = sha("arm");
+        let first = build(&image, x86.clone(), now);
+        let second = build(&image, arm.clone(), now);
+        let mut newer = second.clone();
+        newer.build = "2".to_string();
+        let merged = merge_builds([first.clone(), second, first, newer]);
+        assert_eq!(merged.len(), 2);
+        assert_eq!(merged[0].build, "2");
+        assert_eq!(merged[1].artifacts, vec![x86, arm]);
+    }
+
+    #[test]
+    fn mixed_architecture_builds_are_newest_first_not_x86_first() {
+        let image = resolved(SourceFormat::Qcow2, true);
+        let now = chrono::Utc::now();
+        let mut older = build(&image, sample_artifact(None, None, sha("x86")), now);
+        older.build = "9.8-20261001.9".to_string();
+        let mut newer = older.clone();
+        newer.build = "9.8-20261001.10".to_string();
+        newer.artifacts[0].arch = "aarch64".to_string();
+        let builds = merge_builds([older, newer]);
+        assert_eq!(builds[0].build, "9.8-20261001.10");
+        assert_eq!(builds[1].build, "9.8-20261001.9");
     }
 
     #[test]

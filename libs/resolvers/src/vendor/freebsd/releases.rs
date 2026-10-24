@@ -102,10 +102,136 @@ pub fn parse_version(input: &str) -> Result<String> {
     Ok(stripped.to_string())
 }
 
+pub fn pick_arch_directory(
+    body: &str,
+    arch: crate::vendor::Architecture,
+) -> Result<Option<String>> {
+    let re = Regex::new(r#"href="([^"]+)""#)?;
+    let candidates: &[&str] = match arch {
+        crate::vendor::Architecture::X86_64 => &["amd64/"],
+        crate::vendor::Architecture::Aarch64 => &["aarch64/", "arm64/"],
+    };
+    Ok(candidates
+        .iter()
+        .find(|name| re.captures_iter(body).any(|c| &c[1] == **name))
+        .map(|s| s.to_string()))
+}
+
+pub fn pick_cloud_image(
+    body: &str,
+    version: &str,
+    arch: crate::vendor::Architecture,
+) -> Result<Option<String>> {
+    let machine = match arch {
+        crate::vendor::Architecture::X86_64 => "amd64",
+        crate::vendor::Architecture::Aarch64 => "arm64-aarch64",
+    };
+    let filename = format!("FreeBSD-{version}-RELEASE-{machine}-BASIC-CLOUDINIT-zfs.raw.xz");
+    let re = Regex::new(r#"href="([^"]+)""#)?;
+    Ok(re
+        .captures_iter(body)
+        .any(|c| c[1] == filename)
+        .then_some(filename))
+}
+
+pub async fn discover_image(
+    http: &reqwest::Client,
+    version: &str,
+    arch: crate::vendor::Architecture,
+) -> Result<Option<(String, String)>> {
+    let root = format!("{VM_IMAGES_URL}{version}-RELEASE/");
+    let body = fetch_listing(http, &root).await?;
+    let Some(directory) = pick_arch_directory(&body, arch)? else {
+        return Ok(None);
+    };
+    let mut base = format!("{root}{directory}");
+    let body = fetch_listing(http, &base).await?;
+    if directory == "arm64/" {
+        let Some(subdir) = pick_arch_directory(&body, arch)? else {
+            return Ok(None);
+        };
+        base.push_str(&subdir);
+        let body = fetch_listing(http, &base).await?;
+        if !body.contains("href=\"Latest/\"") {
+            return Ok(None);
+        }
+    } else if !body.contains("href=\"Latest/\"") {
+        return Ok(None);
+    }
+    base.push_str("Latest/");
+    let listing = fetch_listing(http, &base).await?;
+    Ok(pick_cloud_image(&listing, version, arch)?.map(|filename| (base, filename)))
+}
+
+async fn fetch_listing(http: &reqwest::Client, url: &str) -> Result<String> {
+    http.get(url)
+        .send()
+        .await
+        .with_context(|| format!("GET {url}"))?
+        .error_for_status()
+        .with_context(|| format!("status {url}"))?
+        .text()
+        .await
+        .with_context(|| format!("body {url}"))
+}
+
 #[cfg(test)]
 #[allow(clippy::unwrap_used)]
 mod tests {
     use super::*;
+
+    #[test]
+    fn arm_fixture_discovers_directory_and_exact_basic_cloudinit_zfs_filename() {
+        use crate::vendor::Architecture;
+        let directories = r#"<a href="amd64/">amd64</a><a href="aarch64/">aarch64</a>"#;
+        assert_eq!(
+            pick_arch_directory(directories, Architecture::Aarch64)
+                .unwrap()
+                .as_deref(),
+            Some("aarch64/")
+        );
+        assert_eq!(
+            pick_arch_directory(r#"<a href="arm64/">arm64</a>"#, Architecture::Aarch64)
+                .unwrap()
+                .as_deref(),
+            Some("arm64/")
+        );
+        assert!(
+            pick_arch_directory(r#"<a href="amd64/">x</a>"#, Architecture::Aarch64)
+                .unwrap()
+                .is_none()
+        );
+        let listing = r#"
+<a href="CHECKSUM.SHA256">sums</a>
+<a href="FreeBSD-15.0-RELEASE-arm64-aarch64-BASIC-CLOUDINIT-ufs.raw.xz">x</a>
+<a href="FreeBSD-15.0-RELEASE-arm64-aarch64-BASIC-CLOUDINIT-zfs.qcow2.xz">x</a>
+<a href="FreeBSD-15.0-RELEASE-arm64-aarch64-zfs.raw.xz">x</a>
+<a href="FreeBSD-15.0-RELEASE-arm64-aarch64-BASIC-CLOUDINIT-zfs.raw.xz">x</a>
+<a href="FreeBSD-15.0-RELEASE-amd64-BASIC-CLOUDINIT-zfs.raw.xz">x</a>
+"#;
+        assert_eq!(
+            pick_cloud_image(listing, "15.0", Architecture::Aarch64)
+                .unwrap()
+                .as_deref(),
+            Some("FreeBSD-15.0-RELEASE-arm64-aarch64-BASIC-CLOUDINIT-zfs.raw.xz")
+        );
+        assert_eq!(
+            pick_cloud_image(listing, "15.0", Architecture::X86_64)
+                .unwrap()
+                .as_deref(),
+            Some("FreeBSD-15.0-RELEASE-amd64-BASIC-CLOUDINIT-zfs.raw.xz")
+        );
+        assert!(
+            pick_cloud_image(listing, "14.4", Architecture::Aarch64)
+                .unwrap()
+                .is_none()
+        );
+        assert!(
+            pick_cloud_image("<html></html>", "15.0", Architecture::Aarch64)
+                .unwrap()
+                .is_none()
+        );
+    }
 
     #[test]
     fn parse_latest_picks_highest_version() {

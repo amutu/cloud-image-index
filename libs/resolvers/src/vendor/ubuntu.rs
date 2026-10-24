@@ -65,11 +65,24 @@ impl VendorProfile for Ubuntu {
     ) -> Result<ResolvedImage> {
         resolve_via_streams(self.streams(http).await?, release)
     }
+
+    async fn resolve_release_arch(
+        &self,
+        release: &str,
+        arch: super::Architecture,
+        http: &reqwest::Client,
+    ) -> Result<Option<ResolvedImage>> {
+        streams::resolve_arch(self.streams(http).await?, release, arch)?
+            .map(image_from_streams)
+            .transpose()
+    }
 }
 
 fn resolve_via_streams(index: &streams::Streams, release: &str) -> Result<ResolvedImage> {
-    let img = streams::resolve(index, release)?;
+    image_from_streams(streams::resolve(index, release)?)
+}
 
+fn image_from_streams(img: streams::StreamsImage) -> Result<ResolvedImage> {
     let description = format!(
         "Ubuntu {} ({}) CloudInit NoCloud compatible image. \
          Built to run on bhyve virtual machines.",
@@ -174,6 +187,56 @@ mod tests {
             .await
             .unwrap_or_else(|e| panic!("{e:#}"));
         assert_eq!(image.version, "20260301");
+    }
+
+    #[tokio::test]
+    async fn arm_profile_keeps_metadata_build_and_checksum_source() {
+        let feed = serde_json::from_str(r#"{"products":{"arm":{"arch":"arm64","release":"noble","version":"24.04","versions":{"20260302":{"items":{"disk1.img":{"path":"server/releases/noble/release-20260302/actual-arm.img","sha256":"armhash"}}}}}}}"#).unwrap_or_else(|e| panic!("{e}"));
+        let ubuntu = Ubuntu::with_streams(feed);
+        let image = ubuntu
+            .resolve_release_arch("noble", super::super::Architecture::Aarch64, &offline())
+            .await
+            .unwrap_or_else(|e| panic!("{e}"))
+            .unwrap_or_else(|| panic!("missing resolved image"));
+        assert_eq!(image.version, "20260302");
+        assert_eq!(image.expected_sha256.as_deref(), Some("armhash"));
+        assert_eq!(
+            image.verifier.checksum_source(),
+            crate::verify::ChecksumSource::Document {
+                url: image
+                    .url
+                    .join("SHA256SUMS")
+                    .unwrap_or_else(|e| panic!("{e}")),
+                filename: "actual-arm.img".into(),
+                style: crate::verify::SumsStyle::Gnu,
+                algorithm: crate::verify::HashAlgorithm::Sha256,
+            }
+        );
+    }
+
+    #[tokio::test]
+    async fn architecture_resolution_preserves_x86_and_fetch_errors() {
+        let ubuntu = Ubuntu::with_streams(streams::tests::fixture());
+        let x86 = ubuntu
+            .resolve_release_arch("noble", super::super::Architecture::X86_64, &offline())
+            .await
+            .unwrap_or_else(|e| panic!("{e}"))
+            .unwrap_or_else(|| panic!("missing resolved image"));
+        assert_eq!(x86.version, "20260301");
+        assert_eq!(x86.expected_sha256.as_deref(), Some("bbb"));
+        assert!(
+            ubuntu
+                .resolve_release_arch("noble", super::super::Architecture::Aarch64, &offline())
+                .await
+                .unwrap_or_else(|e| panic!("{e}"))
+                .is_none()
+        );
+        assert!(
+            Ubuntu::default()
+                .resolve_release_arch("noble", super::super::Architecture::Aarch64, &offline())
+                .await
+                .is_err()
+        );
     }
 
     #[tokio::test]

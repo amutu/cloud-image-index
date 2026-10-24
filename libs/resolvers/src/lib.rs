@@ -41,8 +41,8 @@ pub mod vendor;
 pub mod verify;
 
 pub use vendor::{
-    ImageFacts, ResolvedImage, SignatureKind, SignatureRef, SourceFormat, Vendor, VendorInfo,
-    VendorProfile, VersionEntry, all_vendors, lookup, validate_version_token,
+    Architecture, ImageFacts, ResolvedImage, SignatureKind, SignatureRef, SourceFormat, Vendor,
+    VendorInfo, VendorProfile, VersionEntry, all_vendors, lookup, validate_version_token,
 };
 
 /// Render a serde-Serialize enum to its serde-rename string form

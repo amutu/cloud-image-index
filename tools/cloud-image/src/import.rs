@@ -110,9 +110,8 @@ pub fn release_choices(distro: &Distro) -> String {
     out
 }
 
-/// The build to import (the first the index lists for the release) and
-/// its artifact for `arch`: the one named `variant`, or the vendor's
-/// default flavour.
+/// 从最新到最旧的 build 中，选择首个符合架构和指定 variant
+/// （未指定时为默认 variant）的 artifact。
 pub fn choose_artifact<'a>(
     list: &'a BuildList,
     arch: &str,
@@ -124,30 +123,35 @@ pub fn choose_artifact<'a>(
             list.distro, list.release
         )
     })?;
-    let artifact = build
-        .artifacts
+    if let Some(pair) = list.builds.iter().find_map(|build| {
+        build
+            .artifacts
+            .iter()
+            .find(|a| {
+                a.arch == arch
+                    && match variant {
+                        Some(v) => a.variant.as_deref() == Some(v),
+                        None => a.default_variant == Some(true),
+                    }
+            })
+            .map(|artifact| (build, artifact))
+    }) {
+        return Ok(pair);
+    }
+    let have: Vec<String> = list
+        .builds
         .iter()
-        .filter(|a| a.arch == arch)
-        .find(|a| match variant {
-            Some(v) => a.variant.as_deref() == Some(v),
-            None => a.default_variant == Some(true),
-        })
-        .with_context(|| {
-            let have: Vec<String> = build
-                .artifacts
-                .iter()
-                .map(|a| format!("{}/{}", a.variant.as_deref().unwrap_or("-"), a.arch))
-                .collect();
-            format!(
-                "{}/{} build {}: no {} artifact for {arch} (have: {})",
-                list.distro,
-                list.release,
-                build.build,
-                variant.unwrap_or("default"),
-                have.join(", ")
-            )
-        })?;
-    Ok((build, artifact))
+        .flat_map(|b| &b.artifacts)
+        .map(|a| format!("{}/{}", a.variant.as_deref().unwrap_or("-"), a.arch))
+        .collect();
+    anyhow::bail!(
+        "{}/{}: no {} artifact for {arch} in any build (newest: {}; have: {})",
+        list.distro,
+        list.release,
+        variant.unwrap_or("default"),
+        build.build,
+        have.join(", ")
+    )
 }
 
 /// How the pipeline decodes an artifact of this format and compression.
@@ -550,11 +554,21 @@ pub fn avail_rows(list: &ImageList, only: Option<&str>) -> Result<(Vec<Available
     let mut rows = Vec::new();
     let mut notes = Vec::new();
     let mut seen = std::collections::HashSet::new();
+    let mut skipped = Vec::new();
     for image in &list.images {
         if only.is_some_and(|id| image.distro.id != id) {
             continue;
         }
-        // Builds are newest first; later ones of a release are older.
+        if !image
+            .build
+            .artifacts
+            .iter()
+            .any(|a| a.arch == "x86_64" && a.default_variant == Some(true))
+        {
+            skipped.push(image);
+            continue;
+        }
+        // 按架构筛选后，每个 release 只选择首个匹配 build。
         if !seen.insert((&image.distro.id, &image.release.id)) {
             continue;
         }
@@ -579,6 +593,17 @@ pub fn avail_rows(list: &ImageList, only: Option<&str>) -> Result<(Vec<Available
                 "leaving out {} {}: {e:#}",
                 image.distro.id, image.release.id
             )),
+        }
+    }
+    for image in skipped {
+        if seen.insert((&image.distro.id, &image.release.id)) {
+            let (distro, builds) = one_image(image);
+            if let Err(e) = available(&distro, &builds) {
+                notes.push(format!(
+                    "leaving out {} {}: {e:#}",
+                    image.distro.id, image.release.id
+                ));
+            }
         }
     }
     Ok((rows, notes))
@@ -1013,6 +1038,55 @@ mod tests {
             "../../../examples/v1/distros/ubuntu/index.json"
         ))
         .unwrap_or_else(|e| panic!("{e}"))
+    }
+
+    #[test]
+    fn mixed_builds_choose_newest_matching_architecture_and_variant() -> Result<()> {
+        let mut list = rocky9();
+        let original = list.builds[0].clone();
+        let mut arm = original.clone();
+        arm.build = "arm-newer".to_string();
+        for artifact in &mut arm.artifacts {
+            artifact.arch = "aarch64".to_string();
+        }
+        list.builds.insert(0, arm);
+        let (chosen, artifact) = choose_artifact(&list, "x86_64", None)?;
+        assert_eq!(chosen.build, original.build);
+        assert_eq!(artifact.arch, "x86_64");
+        let (_, lvm) = choose_artifact(&list, "x86_64", Some("lvm"))?;
+        assert_eq!(lvm.variant.as_deref(), Some("lvm"));
+        assert_eq!(
+            choose_artifact(&list, "aarch64", None)?.0.build,
+            "arm-newer"
+        );
+        let expected = available(&rocky_distro(), &rocky9())?;
+        assert_eq!(available(&rocky_distro(), &list)?, expected);
+        list.builds.remove(1);
+        assert!(choose_artifact(&list, "x86_64", None).is_err());
+        Ok(())
+    }
+
+    #[test]
+    fn mixed_images_filter_architecture_before_release_dedup() -> Result<()> {
+        let baseline = avail_rows(&images(), Some("ubuntu"))?.0;
+        let mut list = images();
+        let mut arm = list.images[0].clone();
+        arm.build.build = "arm-newer".to_string();
+        for artifact in &mut arm.build.artifacts {
+            artifact.arch = "aarch64".to_string();
+        }
+        list.images.insert(0, arm.clone());
+        list.images.push(list.images[1].clone());
+        let (rows, notes) = avail_rows(&list, Some("ubuntu"))?;
+        assert_eq!(rows, baseline);
+        assert!(notes.is_empty(), "{notes:?}");
+        let (distro, builds) = distro_from_images(&list, "ubuntu")?;
+        assert_eq!(available(&distro, &builds[0])?, baseline[0]);
+        list.images = vec![arm];
+        let (rows, notes) = avail_rows(&list, None)?;
+        assert!(rows.is_empty());
+        assert_eq!(notes.len(), 1);
+        Ok(())
     }
 
     #[test]

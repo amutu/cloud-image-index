@@ -44,6 +44,16 @@ pub struct Resolved {
 }
 
 pub async fn resolve(http: &reqwest::Client, release: &str) -> Result<Resolved> {
+    resolve_arch(http, release, crate::vendor::Architecture::X86_64)
+        .await?
+        .context("no CentOS x86_64 image")
+}
+
+pub async fn resolve_arch(
+    http: &reqwest::Client,
+    release: &str,
+    arch: crate::vendor::Architecture,
+) -> Result<Option<Resolved>> {
     let token = release.trim();
     let stream = if token.eq_ignore_ascii_case("latest") {
         let streams = dirlist::fetch_numeric_subdirs(http, STREAMS_BASE, STREAM_DIR_RE).await?;
@@ -57,36 +67,46 @@ pub async fn resolve(http: &reqwest::Client, release: &str) -> Result<Resolved> 
         parse_stream(token)?
     };
 
-    let images_base = format!("https://cloud.centos.org/centos/{stream}-stream/x86_64/images/");
+    let images_base = format!(
+        "https://cloud.centos.org/centos/{stream}-stream/{}/images/",
+        arch.as_str()
+    );
     eprintln!("Fetching CentOS Stream {stream} image listing ...");
     let body = http
         .get(&images_base)
         .send()
         .await
-        .with_context(|| format!("GET {images_base}"))?
+        .with_context(|| format!("GET {images_base}"))?;
+    if arch == crate::vendor::Architecture::Aarch64
+        && body.status() == reqwest::StatusCode::NOT_FOUND
+    {
+        return Ok(None);
+    }
+    let body = body
         .error_for_status()
         .with_context(|| format!("status from {images_base}"))?
         .text()
         .await
         .with_context(|| format!("read body of {images_base}"))?;
 
-    let filename = find_latest_dated(&body, &stream).ok_or_else(|| {
-        anyhow::anyhow!("no dated `CentOS-Stream-GenericCloud-{stream}-…` qcow2 in {images_base}")
-    })?;
-    let build = strip_filename_chrome(&filename, &stream).unwrap_or_else(|| filename.clone());
+    let Some(filename) = find_latest_dated_arch(&body, &stream, arch) else {
+        return Ok(None);
+    };
+    let build =
+        strip_filename_chrome_arch(&filename, &stream, arch).context("CentOS build filename")?;
 
     let url = format!("{images_base}{filename}");
     let sidecar_url = format!("{url}.SHA256SUM");
     let sha256 = fetch_sidecar_hash(http, &sidecar_url, &filename).await?;
 
-    Ok(Resolved {
+    Ok(Some(Resolved {
         stream,
         build,
         url,
         sha256,
         checksum_url: sidecar_url,
         checksum_filename: filename,
-    })
+    }))
 }
 
 /// List the published streams (e.g. `[8, 9, 10]`) from the same parent
@@ -108,9 +128,18 @@ fn parse_stream(input: &str) -> Result<String> {
 /// All candidates share the same stream prefix and the build suffix is
 /// `<YYYYMMDD>.<n>`, compared with numbers as numbers (`.10` after
 /// `.9`).
+#[cfg(test)]
 fn find_latest_dated(body: &str, stream: &str) -> Option<String> {
+    find_latest_dated_arch(body, stream, crate::vendor::Architecture::X86_64)
+}
+
+fn find_latest_dated_arch(
+    body: &str,
+    stream: &str,
+    arch: crate::vendor::Architecture,
+) -> Option<String> {
     let prefix = format!("CentOS-Stream-GenericCloud-{stream}-");
-    let suffix = ".x86_64.qcow2";
+    let suffix = &format!(".{}.qcow2", arch.as_str());
     let mut candidates: Vec<&str> = body
         .split(['"', '<', '>', ' ', '\n'])
         .filter(|name| {
@@ -131,10 +160,19 @@ fn find_latest_dated(body: &str, stream: &str) -> Option<String> {
     candidates.last().map(|s| s.to_string())
 }
 
+#[cfg(test)]
 fn strip_filename_chrome(filename: &str, stream: &str) -> Option<String> {
+    strip_filename_chrome_arch(filename, stream, crate::vendor::Architecture::X86_64)
+}
+
+fn strip_filename_chrome_arch(
+    filename: &str,
+    stream: &str,
+    arch: crate::vendor::Architecture,
+) -> Option<String> {
     let prefix = format!("CentOS-Stream-GenericCloud-{stream}-");
     let stripped = filename.strip_prefix(&prefix)?;
-    let stripped = stripped.strip_suffix(".x86_64.qcow2")?;
+    let stripped = stripped.strip_suffix(&format!(".{}.qcow2", arch.as_str()))?;
     Some(stripped.to_string())
 }
 
@@ -162,6 +200,54 @@ async fn fetch_sidecar_hash(
 #[allow(clippy::unwrap_used)]
 mod tests {
     use super::*;
+
+    #[test]
+    fn arm_selection_build_and_checksum_filename() {
+        let body = r#"
+            <a href="CentOS-Stream-GenericCloud-9-20260504.9.aarch64.qcow2">image</a>
+            <a href="CentOS-Stream-GenericCloud-9-20260504.10.aarch64.qcow2">image</a>
+            <a href="CentOS-Stream-GenericCloud-9-20260505.0.x86_64.qcow2">image</a>
+            <a href="CentOS-Stream-GenericCloud-9-latest.aarch64.qcow2">image</a>
+            <a href="CentOS-Stream-GenericCloud-9-20260506.0.aarch64.qcow2.SHA256SUM">sum</a>
+            <a href="CentOS-Stream-GenericCloud-10-20260506.0.aarch64.qcow2">image</a>
+        "#;
+        let filename =
+            find_latest_dated_arch(body, "9", crate::vendor::Architecture::Aarch64).unwrap();
+        assert_eq!(
+            filename,
+            "CentOS-Stream-GenericCloud-9-20260504.10.aarch64.qcow2"
+        );
+        assert_eq!(
+            strip_filename_chrome_arch(&filename, "9", crate::vendor::Architecture::Aarch64)
+                .as_deref(),
+            Some("20260504.10")
+        );
+        let sums = format!(
+            "SHA256 (CentOS-Stream-GenericCloud-9-20260505.0.x86_64.qcow2) = {}\nSHA256 ({filename}) = {}\n",
+            "b".repeat(64),
+            "a".repeat(64)
+        );
+        assert_eq!(
+            parse_bsd_sums_file(&sums, &filename).as_deref(),
+            Some("a".repeat(64).as_str())
+        );
+        assert_eq!(
+            find_latest_dated(body, "9").as_deref(),
+            Some("CentOS-Stream-GenericCloud-9-20260505.0.x86_64.qcow2")
+        );
+    }
+
+    #[test]
+    fn arm_selection_returns_none_for_x86_only_listing() {
+        assert!(
+            find_latest_dated_arch(
+                "CentOS-Stream-GenericCloud-9-20260504.0.x86_64.qcow2",
+                "9",
+                crate::vendor::Architecture::Aarch64
+            )
+            .is_none()
+        );
+    }
 
     #[test]
     fn parse_stream_accepts_bare_or_suffixed() {

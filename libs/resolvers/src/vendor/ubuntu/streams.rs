@@ -84,26 +84,36 @@ pub async fn fetch(http: &reqwest::Client) -> Result<Streams> {
 }
 
 pub fn resolve(streams: &Streams, token: &str) -> Result<StreamsImage> {
+    resolve_arch(streams, token, crate::vendor::Architecture::X86_64)?
+        .ok_or_else(|| anyhow::anyhow!("no Ubuntu product matches release token {token:?}"))
+}
+
+pub fn resolve_arch(
+    streams: &Streams,
+    token: &str,
+    arch: crate::vendor::Architecture,
+) -> Result<Option<StreamsImage>> {
     let token = token.trim();
-    let amd64: Vec<&Product> = streams
+    let products: Vec<&Product> = streams
         .products
         .values()
-        .filter(|p| p.arch == "amd64")
+        .filter(|p| p.arch == arch.debian_name())
         .collect();
 
     let product = if token == "latest" {
-        amd64
+        products
             .iter()
             .copied()
             .filter(|p| p.supported && is_lts(&p.release_title))
             .max_by(|a, b| a.version.cmp(&b.version))
-            .ok_or_else(|| anyhow::anyhow!("no supported LTS found in Ubuntu streams"))?
     } else {
-        amd64
+        products
             .iter()
             .copied()
             .find(|p| p.release == token || p.version == token)
-            .ok_or_else(|| anyhow::anyhow!("no Ubuntu product matches release token {token:?}"))?
+    };
+    let Some(product) = product else {
+        return Ok(None);
     };
 
     // Serial keys are date-stamped (`YYYYMMDD` or `YYYYMMDD.N`). The
@@ -126,20 +136,20 @@ pub fn resolve(streams: &Streams, token: &str) -> Result<StreamsImage> {
 
     let url = Url::parse(&format!("{BASE_URL}{}", item.path)).context("ubuntu disk1.img url")?;
 
-    Ok(StreamsImage {
+    Ok(Some(StreamsImage {
         codename: product.release.clone(),
         release_title: product.release_title.clone(),
         serial: serial.clone(),
         url,
         sha256,
-    })
+    }))
 }
 
 fn is_lts(title: &str) -> bool {
     title.contains("LTS")
 }
 
-/// Catalog every amd64 product as a [`VersionEntry`], newest-first.
+/// 按 release 去重汇总 amd64 和 arm64 产品，最新版本优先。
 /// `supported` comes straight from the stream's `supported` flag (the
 /// maintained set, which includes the LTS releases). The `token` is the
 /// codename, which [`super::Ubuntu::resolve`] accepts.
@@ -147,7 +157,7 @@ pub fn catalog(streams: &Streams) -> Vec<VersionEntry> {
     let mut entries: Vec<VersionEntry> = streams
         .products
         .values()
-        .filter(|p| p.arch == "amd64")
+        .filter(|p| p.arch == "amd64" || p.arch == "arm64")
         .map(|p| {
             let title = if p.release_title.is_empty() {
                 p.version.clone()
@@ -173,6 +183,8 @@ pub fn catalog(streams: &Streams) -> Vec<VersionEntry> {
     // Newest-first: version keys are dotted `YY.MM`, so lexicographic
     // descending order matches release recency.
     entries.sort_by(|a, b| b.version.cmp(&a.version));
+    let mut seen = std::collections::BTreeSet::new();
+    entries.retain(|entry| seen.insert(entry.token.clone()));
     entries
 }
 
@@ -242,6 +254,39 @@ pub(crate) mod tests {
           }
         }"#;
         serde_json::from_str(json).unwrap()
+    }
+
+    #[test]
+    fn arm_uses_metadata_and_catalog_includes_arm_only() {
+        let mut s = fixture();
+        let arm: Product = serde_json::from_str(r#"{"arch":"arm64","release":"resolute","version":"26.04","release_title":"26.04 LTS","supported":true,"versions":{"20260301.9":{"items":{"disk1.img":{"path":"arm/old.img","sha256":"old"}}},"20260301.10":{"items":{"disk1.img":{"path":"arm/exact.img","sha256":"armhash"}}}}}"#).unwrap();
+        s.products.insert("arm".into(), arm);
+        let img = resolve_arch(&s, "latest", crate::vendor::Architecture::Aarch64)
+            .unwrap()
+            .unwrap();
+        assert_eq!(img.url.path(), "/arm/exact.img");
+        assert_eq!(img.serial, "20260301.10");
+        assert_eq!(img.sha256, "armhash");
+        assert!(
+            resolve_arch(&s, "noble", crate::vendor::Architecture::Aarch64)
+                .unwrap()
+                .is_none()
+        );
+        let entries = catalog(&s);
+        assert_eq!(entries[0].token, "resolute");
+        assert_eq!(entries.iter().filter(|e| e.token == "jammy").count(), 1);
+        assert_eq!(resolve(&s, "latest").unwrap().codename, "noble");
+        s.products
+            .get_mut("arm")
+            .unwrap()
+            .versions
+            .get_mut("20260301.10")
+            .unwrap()
+            .items
+            .get_mut("disk1.img")
+            .unwrap()
+            .sha256 = None;
+        assert!(resolve_arch(&s, "resolute", crate::vendor::Architecture::Aarch64).is_err());
     }
 
     #[test]

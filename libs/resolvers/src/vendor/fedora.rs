@@ -34,7 +34,12 @@ pub struct Fedora;
 /// `Fedora-Cloud-<build>-x86_64-CHECKSUM`; pre-releases, whose build
 /// ids carry the label after an underscore (`45_Beta-1.3`),
 /// `Fedora-Cloud-images-<build>-x86_64-CHECKSUM`.
+#[cfg(test)]
 fn checksum_file_url(image_url: &str, build: &str) -> Result<Url> {
+    checksum_file_url_arch(image_url, build, super::Architecture::X86_64)
+}
+
+fn checksum_file_url_arch(image_url: &str, build: &str, arch: super::Architecture) -> Result<Url> {
     let dir = image_url
         .rsplit_once('/')
         .map(|(dir, _)| dir)
@@ -44,12 +49,25 @@ fn checksum_file_url(image_url: &str, build: &str) -> Result<Url> {
     } else {
         "Fedora-Cloud"
     };
-    Url::parse(&format!("{dir}/{prefix}-{build}-x86_64-CHECKSUM")).context("fedora CHECKSUM url")
+    Url::parse(&format!(
+        "{dir}/{prefix}-{build}-{}-CHECKSUM",
+        arch.as_str()
+    ))
+    .context("fedora CHECKSUM url")
 }
 
 /// The checksum file is clear-signed, so it is also the signature.
+#[cfg(test)]
 fn checksum_file_signature(image_url: &str, build: &str) -> Result<SignatureRef> {
-    let url = checksum_file_url(image_url, build)?;
+    checksum_file_signature_arch(image_url, build, super::Architecture::X86_64)
+}
+
+fn checksum_file_signature_arch(
+    image_url: &str,
+    build: &str,
+    arch: super::Architecture,
+) -> Result<SignatureRef> {
+    let url = checksum_file_url_arch(image_url, build, arch)?;
     Ok(SignatureRef {
         url: url.clone(),
         kind: SignatureKind::Clearsigned,
@@ -81,20 +99,42 @@ impl VendorProfile for Fedora {
         let entries = releases::fetch(http).await?;
         resolved_image(releases::resolve(&entries, release)?)
     }
+    async fn resolve_release_arch(
+        &self,
+        release: &str,
+        arch: super::Architecture,
+        http: &reqwest::Client,
+    ) -> Result<Option<ResolvedImage>> {
+        let entries = releases::fetch(http).await?;
+        releases::resolve_arch(&entries, release, arch)?
+            .map(|r| resolved_image_arch(r, arch))
+            .transpose()
+    }
 }
 
 /// The image for a release releases.json resolved to. Its hash is the
 /// one in the build's CHECKSUM file (a generic BSD-style listing clients
 /// can read back), not the one in releases.json.
 fn resolved_image(resolved: releases::Resolved) -> Result<ResolvedImage> {
+    resolved_image_arch(resolved, super::Architecture::X86_64)
+}
+
+fn resolved_image_arch(
+    resolved: releases::Resolved,
+    arch: super::Architecture,
+) -> Result<ResolvedImage> {
     let url: Url = resolved.url.parse().context("fedora image url")?;
-    let checksum_url = checksum_file_url(url.as_str(), &resolved.build)?;
+    let checksum_url = checksum_file_url_arch(url.as_str(), &resolved.build, arch)?;
     let filename = url
         .path_segments()
         .and_then(|mut s| s.next_back())
         .unwrap_or_default()
         .to_string();
-    let signatures = vec![checksum_file_signature(url.as_str(), &resolved.build)?];
+    let signatures = vec![checksum_file_signature_arch(
+        url.as_str(),
+        &resolved.build,
+        arch,
+    )?];
     let mut image = PinnedQcow2 {
         url,
         // Fedora has no codenames after F20 — major is the
@@ -122,6 +162,42 @@ fn resolved_image(resolved: releases::Resolved) -> Result<ResolvedImage> {
 #[cfg(test)]
 mod tests {
     use super::*;
+
+    #[test]
+    fn arm_checksum_document_and_signature_use_selected_architecture() {
+        for (major, build, prefix) in [
+            ("44", "44-1.8", "Fedora-Cloud"),
+            ("45 Beta", "45_Beta-1.3", "Fedora-Cloud-images"),
+        ] {
+            let filename = format!("Fedora-Cloud-Base-Generic-{build}.aarch64.qcow2");
+            let image = resolved_image_arch(
+                releases::Resolved {
+                    major: major.to_string(),
+                    build: build.to_string(),
+                    url: format!("https://example.test/Cloud/aarch64/images/{filename}"),
+                    sha256: "a".repeat(64),
+                },
+                crate::vendor::Architecture::Aarch64,
+            )
+            .unwrap_or_else(|e| panic!("{e:#}"));
+            let checksum = Url::parse(&format!(
+                "https://example.test/Cloud/aarch64/images/{prefix}-{build}-aarch64-CHECKSUM"
+            ))
+            .unwrap_or_else(|e| panic!("{e}"));
+            assert_eq!(
+                image.verifier.checksum_source(),
+                crate::verify::ChecksumSource::Document {
+                    url: checksum.clone(),
+                    filename,
+                    style: SumsStyle::Bsd,
+                    algorithm: crate::verify::HashAlgorithm::Sha256,
+                }
+            );
+            assert_eq!(image.version, build);
+            assert_eq!(image.facts.signatures[0].url, checksum);
+            assert_eq!(image.facts.signatures[0].signs, checksum);
+        }
+    }
 
     /// Pre-releases name their checksum file differently (directory
     /// listings of 43, 44 and 45_Beta, 2026-10-08).

@@ -71,9 +71,37 @@ fn point_release_of_build(
 }
 
 /// Image URL, SHA512SUMS URL and image filename for one dated build.
+#[cfg(test)]
 fn build_urls(codename: &str, major: u32, build: &str) -> Result<(Url, Url, String)> {
+    build_urls_arch(codename, major, build, super::Architecture::X86_64)
+}
+
+fn listed_build_urls(
+    codename: &str,
+    major: u32,
+    build: &str,
+    arch: super::Architecture,
+    listing: &str,
+) -> Result<Option<(Url, Url, String)>> {
+    let urls = build_urls_arch(codename, major, build, arch)?;
+    let links = regex::Regex::new(r#"href=["']([^"']+)["']"#)?;
+    Ok(links
+        .captures_iter(listing)
+        .any(|c| c[1] == urls.2)
+        .then_some(urls))
+}
+
+fn build_urls_arch(
+    codename: &str,
+    major: u32,
+    build: &str,
+    arch: super::Architecture,
+) -> Result<(Url, Url, String)> {
     let dir = format!("{CLOUD_BASE}{codename}/{build}/");
-    let filename = format!("debian-{major}-genericcloud-amd64-{build}.qcow2");
+    let filename = format!(
+        "debian-{major}-genericcloud-{}-{build}.qcow2",
+        arch.debian_name()
+    );
     let url: Url = format!("{dir}{filename}")
         .parse()
         .context("debian image url")?;
@@ -147,6 +175,17 @@ impl VendorProfile for Debian {
         release: &str,
         http: &reqwest::Client,
     ) -> Result<ResolvedImage> {
+        self.resolve_release_arch(release, super::Architecture::X86_64, http)
+            .await?
+            .ok_or_else(|| anyhow::anyhow!("debian: no amd64 image for {release}"))
+    }
+
+    async fn resolve_release_arch(
+        &self,
+        release: &str,
+        arch: super::Architecture,
+        http: &reqwest::Client,
+    ) -> Result<Option<ResolvedImage>> {
         let suite = token_to_suite(release);
         let info = release_file::fetch(http, suite)
             .await
@@ -174,10 +213,22 @@ impl VendorProfile for Debian {
             .with_context(|| format!("read body of {codename_dir}"))?;
         let build = newest_build_dir(&listing)
             .ok_or_else(|| anyhow::anyhow!("no dated build directory under {codename_dir}"))?;
-        let (url, sums_url, filename) = build_urls(&codename, major, &build)?;
+        let build_dir = format!("{codename_dir}{build}/");
+        let listing = http
+            .get(&build_dir)
+            .send()
+            .await?
+            .error_for_status()?
+            .text()
+            .await?;
+        let Some((url, sums_url, filename)) =
+            listed_build_urls(&codename, major, &build, arch, &listing)?
+        else {
+            return Ok(None);
+        };
         let point_release = point_release_of_build(&version, release_date, &build);
 
-        Ok(ResolvedImage {
+        Ok(Some(ResolvedImage {
             url,
             format: SourceFormat::Qcow2,
             os: "linux".to_string(),
@@ -201,13 +252,52 @@ impl VendorProfile for Debian {
                 point_release,
                 ..ImageFacts::default()
             },
-        })
+        }))
     }
 }
 
 #[cfg(test)]
 mod tests {
     use super::*;
+
+    #[test]
+    fn arm_build_requires_the_exact_directory_entry() {
+        let listing = r#"<a href="debian-13-genericcloud-arm64-20261001-2618.qcow2">image</a>"#;
+        let (url, sums, filename) = listed_build_urls(
+            "trixie",
+            13,
+            "20261001-2618",
+            super::super::Architecture::Aarch64,
+            listing,
+        )
+        .unwrap_or_else(|e| panic!("{e}"))
+        .unwrap_or_else(|| panic!("missing ARM image"));
+        assert!(url.as_str().ends_with(&filename));
+        assert_eq!(filename, "debian-13-genericcloud-arm64-20261001-2618.qcow2");
+        assert!(sums.as_str().ends_with("/20261001-2618/SHA512SUMS"));
+        assert!(
+            listed_build_urls(
+                "trixie",
+                13,
+                "20261001-2618",
+                super::super::Architecture::X86_64,
+                listing
+            )
+            .unwrap_or_else(|e| panic!("{e}"))
+            .is_none()
+        );
+        assert!(
+            listed_build_urls(
+                "trixie",
+                13,
+                "20261002-2619",
+                super::super::Architecture::Aarch64,
+                listing
+            )
+            .unwrap_or_else(|e| panic!("{e}"))
+            .is_none()
+        );
+    }
 
     #[test]
     fn latest_aliases_to_stable() {

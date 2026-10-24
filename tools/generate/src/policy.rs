@@ -57,6 +57,7 @@ pub struct PlannedRelease {
     pub eol_date: Option<chrono::NaiveDate>,
     /// Index into the candidates this release's build comes from.
     pub candidate: usize,
+    pub candidates: Vec<usize>,
     /// Labels gathered from every candidate that named this release.
     lts: bool,
     dev: Option<String>,
@@ -110,6 +111,7 @@ pub fn plan(distro_name: &str, candidates: &[Candidate<'_>]) -> Result<Plan> {
                     aliases: Vec::new(),
                     eol_date: c.entry.eol_date,
                     candidate: i,
+                    candidates: Vec::new(),
                     lts: false,
                     dev: None,
                     not_dev: false,
@@ -118,6 +120,7 @@ pub fn plan(distro_name: &str, candidates: &[Candidate<'_>]) -> Result<Plan> {
                 &mut plan.releases[last]
             }
         };
+        p.candidates.push(i);
         p.lts |= c.entry.lts;
         match &c.entry.dev {
             Some(name) => p.dev = p.dev.clone().or(Some(name.clone())),
@@ -137,6 +140,7 @@ pub fn plan(distro_name: &str, candidates: &[Candidate<'_>]) -> Result<Plan> {
     }
     for p in &mut plan.releases {
         p.aliases.sort();
+        p.aliases.dedup();
     }
     Ok(plan)
 }
@@ -307,6 +311,18 @@ mod tests {
         assert_eq!(p.releases[0].title, "Distro r151058");
         assert_eq!(p.releases[0].version, "r151058");
         assert_eq!(p.dev_channel.as_deref(), Some("bloody"));
+    }
+
+    #[test]
+    fn repeated_release_keeps_all_candidates_and_aliases_once() {
+        let p = plan_of(
+            &[lts(entry("9", true)), lts(entry("9", true))],
+            &[None, None],
+        );
+        assert_eq!(p.releases.len(), 1);
+        assert_eq!(p.releases[0].candidate, 0);
+        assert_eq!(p.releases[0].candidates, vec![0, 1]);
+        assert_eq!(p.releases[0].aliases, vec![Alias::Latest, Alias::Lts]);
     }
 
     #[test]

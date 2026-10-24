@@ -47,6 +47,16 @@ pub struct Resolved {
 }
 
 pub async fn resolve(http: &reqwest::Client, release: &str) -> Result<Resolved> {
+    resolve_arch(http, release, crate::vendor::Architecture::X86_64)
+        .await?
+        .context("no Rocky x86_64 image")
+}
+
+pub async fn resolve_arch(
+    http: &reqwest::Client,
+    release: &str,
+    arch: crate::vendor::Architecture,
+) -> Result<Option<Resolved>> {
     let token = release.trim();
     let major = if token.eq_ignore_ascii_case("latest") {
         let majors = dirlist::fetch_numeric_subdirs(http, REPO_BASE, MAJOR_DIR_RE).await?;
@@ -60,36 +70,46 @@ pub async fn resolve(http: &reqwest::Client, release: &str) -> Result<Resolved> 
         parse_major(token)?
     };
 
-    let images_base = format!("https://download.rockylinux.org/pub/rocky/{major}/images/x86_64/");
+    let images_base = format!(
+        "https://download.rockylinux.org/pub/rocky/{major}/images/{}/",
+        arch.as_str()
+    );
     eprintln!("Fetching Rocky {major} image listing ...");
     let body = http
         .get(&images_base)
         .send()
         .await
-        .with_context(|| format!("GET {images_base}"))?
+        .with_context(|| format!("GET {images_base}"))?;
+    if arch == crate::vendor::Architecture::Aarch64
+        && body.status() == reqwest::StatusCode::NOT_FOUND
+    {
+        return Ok(None);
+    }
+    let body = body
         .error_for_status()
         .with_context(|| format!("status from {images_base}"))?
         .text()
         .await
         .with_context(|| format!("read body of {images_base}"))?;
 
-    let filename = find_latest_dated(&body, &major).ok_or_else(|| {
-        anyhow::anyhow!("no dated `Rocky-{major}-GenericCloud-Base-…` qcow2 in {images_base}")
-    })?;
-    let build = strip_filename_chrome(&filename, &major).unwrap_or_else(|| filename.clone());
+    let Some(filename) = find_latest_dated_arch(&body, &major, arch) else {
+        return Ok(None);
+    };
+    let build =
+        strip_filename_chrome_arch(&filename, &major, arch).context("Rocky build filename")?;
 
     let url = format!("{images_base}{filename}");
     let sidecar_url = format!("{url}.CHECKSUM");
     let sha256 = fetch_sidecar_hash(http, &sidecar_url, &filename).await?;
 
-    Ok(Resolved {
+    Ok(Some(Resolved {
         major,
         build,
         url,
         sha256,
         checksum_url: sidecar_url,
         checksum_filename: filename,
-    })
+    }))
 }
 
 /// List the published majors (e.g. `[8, 9, 10]`) from the same parent
@@ -130,9 +150,18 @@ fn parse_major(input: &str) -> Result<String> {
 /// directory listing. All candidates share the same major and the
 /// build suffix is `<major>.<minor>-<date>.<n>`, compared with
 /// numbers as numbers (`9.10` after `9.9`).
+#[cfg(test)]
 fn find_latest_dated(body: &str, major: &str) -> Option<String> {
+    find_latest_dated_arch(body, major, crate::vendor::Architecture::X86_64)
+}
+
+fn find_latest_dated_arch(
+    body: &str,
+    major: &str,
+    arch: crate::vendor::Architecture,
+) -> Option<String> {
     let prefix = format!("Rocky-{major}-GenericCloud-Base-");
-    let suffix = ".x86_64.qcow2";
+    let suffix = &format!(".{}.qcow2", arch.as_str());
     let mut candidates: Vec<&str> = body
         .split(['"', '<', '>', ' ', '\n'])
         .filter(|name| {
@@ -151,10 +180,19 @@ fn find_latest_dated(body: &str, major: &str) -> Option<String> {
     candidates.last().map(|s| s.to_string())
 }
 
+#[cfg(test)]
 fn strip_filename_chrome(filename: &str, major: &str) -> Option<String> {
+    strip_filename_chrome_arch(filename, major, crate::vendor::Architecture::X86_64)
+}
+
+fn strip_filename_chrome_arch(
+    filename: &str,
+    major: &str,
+    arch: crate::vendor::Architecture,
+) -> Option<String> {
     let prefix = format!("Rocky-{major}-GenericCloud-Base-");
     let stripped = filename.strip_prefix(&prefix)?;
-    let stripped = stripped.strip_suffix(".x86_64.qcow2")?;
+    let stripped = stripped.strip_suffix(&format!(".{}.qcow2", arch.as_str()))?;
     Some(stripped.to_string())
 }
 
@@ -162,6 +200,54 @@ fn strip_filename_chrome(filename: &str, major: &str) -> Option<String> {
 #[allow(clippy::unwrap_used)]
 mod tests {
     use super::*;
+
+    #[test]
+    fn arm_selection_build_and_checksum_filename() {
+        let body = r#"
+            <a href="Rocky-9-GenericCloud-Base-9.10-20261201.9.aarch64.qcow2">image</a>
+            <a href="Rocky-9-GenericCloud-Base-9.10-20261201.10.aarch64.qcow2">image</a>
+            <a href="Rocky-9-GenericCloud-Base-9.11-20261202.0.x86_64.qcow2">image</a>
+            <a href="Rocky-9-GenericCloud-LVM-9.12-20261203.0.aarch64.qcow2">image</a>
+            <a href="Rocky-9-GenericCloud-Base.latest.aarch64.qcow2">image</a>
+            <a href="Rocky-9-GenericCloud-Base-9.12-20261203.0.aarch64.qcow2.CHECKSUM">sum</a>
+        "#;
+        let filename =
+            find_latest_dated_arch(body, "9", crate::vendor::Architecture::Aarch64).unwrap();
+        assert_eq!(
+            filename,
+            "Rocky-9-GenericCloud-Base-9.10-20261201.10.aarch64.qcow2"
+        );
+        assert_eq!(
+            strip_filename_chrome_arch(&filename, "9", crate::vendor::Architecture::Aarch64)
+                .as_deref(),
+            Some("9.10-20261201.10")
+        );
+        let sums = format!(
+            "SHA256 (Rocky-9-GenericCloud-Base-9.11-20261202.0.x86_64.qcow2) = {}\nSHA256 ({filename}) = {}\n",
+            "b".repeat(64),
+            "a".repeat(64)
+        );
+        assert_eq!(
+            parse_bsd_sums_file(&sums, &filename).as_deref(),
+            Some("a".repeat(64).as_str())
+        );
+        assert_eq!(
+            find_latest_dated(body, "9").as_deref(),
+            Some("Rocky-9-GenericCloud-Base-9.11-20261202.0.x86_64.qcow2")
+        );
+    }
+
+    #[test]
+    fn arm_selection_returns_none_for_x86_only_listing() {
+        assert!(
+            find_latest_dated_arch(
+                "Rocky-9-GenericCloud-Base-9.7-20251123.2.x86_64.qcow2",
+                "9",
+                crate::vendor::Architecture::Aarch64
+            )
+            .is_none()
+        );
+    }
 
     #[test]
     fn parse_major_accepts_integer_only() {
